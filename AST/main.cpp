@@ -1,4 +1,4 @@
-#include "Node.hpp"
+#include "Token.hpp"
 
 // int main(int argc, char **argv)
 // {
@@ -24,6 +24,35 @@
 // 	return 0;
 // }
 
+void printNode(const Token& node)
+{
+	switch (node.type)
+	{
+		case NodeType::Num:
+			std::cout << "Type: Number, Value: " << node.value << "\n";
+			break;
+
+		case NodeType::Var:
+			std::cout << "Type: Variable, Name: " << node.value << "\n";
+			break;
+
+		case NodeType::Op:
+			std::cout << "Type: Operator: " << node.value << "\n";
+			break;
+
+		case NodeType::OpBr:
+			std::cout << "Type: Open Bracket, Symbol: " << node.value << "\n";
+			break;
+
+		case NodeType::ClBr:
+			std::cout << "Type: Close Bracket, Symbol: " << node.value << "\n";
+			break;
+
+		default:
+			std::cout << "Type: Unknown\n";
+			break;
+	}
+}
 
 int main()
 {
@@ -36,9 +65,12 @@ int main()
 		std::stringstream line(expression);
 
 		std::vector<std::string> v = lexer(line);
+		std::vector<Token> tokens = tokenizer(v);
 		for(auto& c:v)
 			std::cout << c << "  ";
 		std::cout <<'\n';
+		for(auto& c:tokens)
+			printNode(c);
 	}
 	catch(std::exception& e)
 	{
