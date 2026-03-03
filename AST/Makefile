@@ -2,7 +2,7 @@ NAME = ast
 CXX = c++
 CXXFLAGS = -Wall -Wextra 
 
-SRC = main.cpp vbc.cpp
+SRC = main.cpp lexer.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
