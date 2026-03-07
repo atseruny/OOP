@@ -51,8 +51,8 @@ int main()
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		for(auto& c:v)
-			std::cout << c << "  ";
+		// for(auto& c:v)
+		// 	std::cout << c << "  ";
 		std::cout <<'\n';
 		Node* tree = parser(tokens);
 		
