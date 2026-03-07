@@ -44,5 +44,6 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 		else
 			throw std::runtime_error("unexpected token");
 	}
+	tokens.push_back(Token("", NodeType::EofEx));
 	return tokens;
 }

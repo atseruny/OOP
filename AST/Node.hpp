@@ -6,20 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-enum NodeType
-{
-	Add,
-	Sub,
-	Div,
-	Mult,
-	Num,
-	Var,
-	EofEx,
-	OpBr,
-	ClBr,
-	Op
-};
+#include "NodeType.hpp"
 
 struct Node
 {
