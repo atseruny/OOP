@@ -2,7 +2,7 @@ NAME = ast
 CXX = c++
 CXXFLAGS = -Wall -Wextra 
 
-SRC = main.cpp lexer.cpp tokenizer.cpp parser.cpp
+SRC = main.cpp lexer.cpp tokenizer.cpp parser.cpp eval.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)

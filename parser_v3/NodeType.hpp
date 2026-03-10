@@ -1,11 +1,15 @@
 #pragma once
 
+enum Operator
+{
+	Add,
+	Sub,
+	Div,
+	Mult
+};
+
 enum NodeType
 {
-	// Add,
-	// Sub,
-	// Div,
-	// Mult,
 	Num,
 	Var,
 	EofEx,

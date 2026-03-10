@@ -2,7 +2,8 @@
 #include "Node.hpp"
 #include "State.hpp"
 
-Node* parser(std::vector<Token>& tokens);
+Node* parser(std::vector<Token>& tokens, std::vector<int>& vars);
+int eval_tree(const Node *tree);
 
 
 void printNode(const Token& node)
@@ -39,28 +40,46 @@ void printNode(const Token& node)
 	}
 }
 
+void clear(Node* node)
+{
+	if (!node)
+		return;
+
+	clear(node->left);
+	clear(node->right);
+
+	delete node;
+}
+
 int main()
 {
+	Node* tree;
 	try
 	{
+		std::vector<int> variables;
 		std::string expression;
 		std::cout << "Enter expression: ";
 		std::getline(std::cin, expression);
+		std::cout << "Enter variables: ";
+		int value;
+		while (std::cin >> value)
+			variables.push_back(value);
 
 		std::stringstream line(expression);
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		// for(auto& c:v)
-		// 	std::cout << c << "  ";
-		std::cout <<'\n';
-		Node* tree = parser(tokens);
+		tree = parser(tokens, variables);
+		// std::cout << "root: " << tree->name << "\n";
 		
-		for(auto& c:tokens)
-			printNode(c);
+		// for(auto& c:tokens)
+		// 	printNode(c);
+		std::cout << "value: " << eval_tree(tree) << "\n";
 	}
 	catch(std::exception& e)
 	{
+		clear(tree);
 		std::cout << e.what() << '\n';
 	}
+	clear(tree);
 }
