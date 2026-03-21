@@ -46,6 +46,8 @@ struct Node
 			else if (token.value == "/")
 				op = Operator::Div;
 			break;
+		default:
+			break;
 		}
 	}
 	~Node() {};
