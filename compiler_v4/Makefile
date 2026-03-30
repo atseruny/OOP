@@ -2,8 +2,8 @@ NAME = ast
 CXX = c++
 CXXFLAGS = -Wall -Wextra 
 
-SRC = main.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp ../parser_v3/parser.cpp \
-		compile.cpp execute.cpp
+SRC = main.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp parser.cpp \
+		VM.cpp SymbolTable.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)

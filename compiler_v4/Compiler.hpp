@@ -1,18 +1,22 @@
 #pragma once
 
 #include "../parser_v3/NodeType.hpp"
+#include <cstdint>
 
-struct Instruction {
-	Operator op;
-	int dest;
-	int left;
-	int right;
+enum class OpCode : uint8_t
+{
+	LOAD_NUM,
+	LOAD_VAR,
+	ADD,
+	SUB,
+	MUL,
+	DIV
 };
 
-struct VM {
-	int regs[100] = {0};
-	int next = 0;
+struct Instruction
+{
+	uint8_t op;
+	uint8_t dest;
+	uint8_t left;
+	uint8_t right;
 };
-
-int compile(Node* node, std::vector<Instruction>& prog, VM& vm);
-int execute(const std::vector<Instruction>& prog, VM& vm);

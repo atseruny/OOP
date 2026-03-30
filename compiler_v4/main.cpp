@@ -1,9 +1,10 @@
 #include "../parser_v3/Token.hpp"
-#include "../parser_v3/Node.hpp"
 #include "../parser_v3/State.hpp"
-#include "Compiler.hpp"
+#include "SymbolTable.hpp"
+#include "VM.hpp"
 
-Node* parser(std::vector<Token>& tokens, std::vector<int>& vars);
+Node* parser(std::vector<Token>& tokens, SymbolTable& ST);
+std::vector<std::string> lexer(std::stringstream& line);
 
 void printNode(const Token& node)
 {
@@ -55,29 +56,30 @@ int main()
 	Node* tree;
 	try
 	{
-		std::vector<int> variables;
-		std::string expression;
-		std::cout << "Enter expression: ";
-		std::getline(std::cin, expression);
-		std::cout << "Enter variables: ";
-		int value;
-		while (std::cin >> value)
-			variables.push_back(value);
+		std::string expression = "a+6*7-b - 4 + 4 / 2";
+		SymbolTable ST;
+		ST.setVariable("a", 40);
+		ST.setVariable("b", 3);
+
+		// std::cout << "Enter expression: ";
+		// std::getline(std::cin, expression);
+		// std::cout << "Enter variables: ";
+		// int value;
+		// while (std::cin >> value)
+		// variables.push_back(value);
 
 		std::stringstream line(expression);
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		tree = parser(tokens, variables);
-		// std::cout << "root: " << tree->name << "\n";
-		
+		tree = parser(tokens, ST);
+
 		// for(auto& c:tokens)
 		// 	printNode(c);
 		VM vm;
-		std::vector<Instruction> program;
-		compile(tree, program, vm);
-		std::cout << "\nValue: " << execute(program, vm) << "\n";
-		std::cout << "Done!\n";
+		vm.compile(tree);
+		vm.visualize();
+		std::cout << "\nValue: " << vm.execute(ST) << "\n";
 		clear(tree);
 	}
 	catch(std::exception& e)
