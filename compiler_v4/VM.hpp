@@ -18,7 +18,7 @@ public:
 	VM();
 	~VM();
 	void visualize() const;
-	int compile(Node* node);
+	int compile(const Node* node);
 	int execute(SymbolTable& ST);
 
 };

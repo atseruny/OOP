@@ -5,13 +5,13 @@
 
 State FSM[3][6] =
 {
-	/* Start */
+	// Start
 	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error },
 
-	/* Wait_operator */
+	// Wait_operator
 	{ Error, Error, End, Error, Wait_operator, Wait_operand },
 
-	/* Wait_operand */
+	// Wait_operand
 	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error }
 };
 
@@ -24,14 +24,15 @@ int priority(Node* node)
 	return 0;
 }
 
-Node* parser(std::vector<Token>& tokens, SymbolTable& ST)
+
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST)
 {
 	State state = Start;
-	Node* n = nullptr;
-	std::stack<Node*> operators;
-	std::stack<Node*> operands;
 
-	for (const Token &t : tokens)
+	std::stack<std::unique_ptr<Node>> operators;
+	std::stack<std::unique_ptr<Node>> operands;
+
+	for (const Token& t : tokens)
 	{
 		state = FSM[state][t.type];
 
@@ -40,70 +41,84 @@ Node* parser(std::vector<Token>& tokens, SymbolTable& ST)
 		if (state == End)
 			break;
 
-		n = new Node(t);
+		std::unique_ptr<Node> n = std::make_unique<Node>(t);
 
 		if (t.type == NodeType::Num)
-			operands.push(n);
+			operands.push(std::move(n));
 		else if (t.type == NodeType::Var)
 		{
 			n->symAddr = ST.getAddress(n->name);
-			operands.push(n);
+			operands.push(std::move(n));
 		}
-		else if (n->type == NodeType::Op)
+		else if (t.type == NodeType::Op)
 		{
 			while (!operators.empty() &&
-					operators.top()->type != OpBr &&
-					priority(operators.top()) >= priority(n))
+				operators.top()->type != OpBr &&
+				priority(operators.top().get()) >= priority(n.get()))
 			{
-				Node* op = operators.top();
+				std::unique_ptr<Node> op = std::move(operators.top());
 				operators.pop();
 
-				Node* right = operands.top(); operands.pop();
-				Node* left = operands.top(); operands.pop();
+				if (operands.size() < 2)
+					throw std::runtime_error("invalid expression");
 
-				op->left = left;
-				op->right = right;
+				std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
+				std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
 
-				operands.push(op);
+				op->left  = std::move(left);
+				op->right = std::move(right);
+
+				operands.push(std::move(op));
 			}
-			operators.push(n);
+			operators.push(std::move(n));
 		}
 		else if (t.type == OpBr)
-			operators.push(n);
+			operators.push(std::move(n));
 		else if (t.type == ClBr)
 		{
 			while (!operators.empty() && operators.top()->type != OpBr)
 			{
-				Node* op = operators.top(); operators.pop();
-				Node* right = operands.top(); operands.pop();
-				Node* left  = operands.top(); operands.pop();
-				op->left = left;
-				op->right = right;
-				operands.push(op);
+				std::unique_ptr<Node> op = std::move(operators.top());
+				operators.pop();
+
+				if (operands.size() < 2)
+					throw std::runtime_error("invalid expression");
+
+				std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
+				std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
+
+				op->left  = std::move(left);
+				op->right = std::move(right);
+
+				operands.push(std::move(op));
 			}
+
 			if (operators.empty())
 				throw std::runtime_error("Mismatched parentheses");
 
-			Node* left_bracket = operators.top();
 			operators.pop();
-			delete left_bracket;
-			delete n;
 		}
 	}
+
 	if (state != End)
 		throw std::runtime_error("unexpected end");
+
 	while (!operators.empty())
 	{
-		Node* op = operators.top();
+		std::unique_ptr<Node> op = std::move(operators.top());
 		operators.pop();
 
-		Node* right = operands.top(); operands.pop();
-		Node* left = operands.top(); operands.pop();
+		if (operands.size() < 2)
+			throw std::runtime_error("invalid expression");
 
-		op->left = left;
-		op->right = right;
+		std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
+		std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
 
-		operands.push(op);
+		op->left  = std::move(left);
+		op->right = std::move(right);
+
+		operands.push(std::move(op));
 	}
-	return operands.top();
+
+	return std::move(operands.top());
 }

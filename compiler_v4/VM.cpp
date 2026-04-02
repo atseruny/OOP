@@ -4,7 +4,7 @@ VM::VM() : regs(100), next(0) { }
 
 VM::~VM() { }
 
-int VM::compile(Node* node)
+int VM::compile(const Node* node)
 {
 	if (node->type == NodeType::Num)
 	{
@@ -23,8 +23,8 @@ int VM::compile(Node* node)
 		return r;
 	}
 
-	int l = compile(node->left);
-	int r = compile(node->right);
+	int l = compile(node->left.get());
+	int r = compile(node->right.get());
 
 	int dest = next++;
 

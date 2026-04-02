@@ -3,7 +3,7 @@
 #include "SymbolTable.hpp"
 #include "VM.hpp"
 
-Node* parser(std::vector<Token>& tokens, SymbolTable& ST);
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST);
 std::vector<std::string> lexer(std::stringstream& line);
 
 void printNode(const Token& node)
@@ -40,20 +40,20 @@ void printNode(const Token& node)
 	}
 }
 
-void clear(Node* node)
-{
-	if (!node)
-		return;
+// void clear(Node* node)
+// {
+// 	if (!node)
+// 		return;
 
-	clear(node->left);
-	clear(node->right);
+// 	clear(node->left);
+// 	clear(node->right);
 
-	delete node;
-}
+// 	delete node;
+// }
 
 int main()
 {
-	Node* tree;
+	// Node* tree;
 	try
 	{
 		std::string expression = "a+6*7-b - 4 + 4 / 2";
@@ -72,19 +72,19 @@ int main()
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		tree = parser(tokens, ST);
+		std::unique_ptr<Node> tree = parser(tokens, ST);
 
 		// for(auto& c:tokens)
 		// 	printNode(c);
 		VM vm;
-		vm.compile(tree);
+		vm.compile(tree.get());
 		vm.visualize();
 		std::cout << "\nValue: " << vm.execute(ST) << "\n";
-		clear(tree);
+		// clear(tree);
 	}
 	catch(std::exception& e)
 	{
-		clear(tree);
+		// clear(tree);
 		std::cout << e.what() << '\n';
 	}
 }

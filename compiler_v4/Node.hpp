@@ -4,6 +4,7 @@
 #include <stack>
 #include "../parser_v3/Token.hpp"
 #include <sstream>
+#include <memory>
 
 struct Node
 {
@@ -11,14 +12,15 @@ struct Node
 	size_t symAddr;
 	Operator op;
 	NodeType type;
-	Node *left;
-	Node *right;
+	std::unique_ptr<Node> left;
+	std::unique_ptr<Node> right;
 	std::string name;
 
 
 	Node(const Token& token)
 	{
-		left = right = nullptr;
+		left = nullptr;
+		right = nullptr;
 		symAddr = 0;
 		value = 0;
 		name = token.value;
@@ -47,3 +49,5 @@ struct Node
 	}
 	~Node() {};
 };
+
+
