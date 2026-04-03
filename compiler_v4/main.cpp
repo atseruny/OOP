@@ -56,13 +56,14 @@ int main()
 	// Node* tree;
 	try
 	{
-		std::string expression = "a+6*7-b - 4 + 4 / 2";
+		std::string expression;
+		// expression = "a+6*7-b - 4 + 4 / 2";
 		SymbolTable ST;
-		ST.setVariable("a", 40);
-		ST.setVariable("b", 3);
-
-		// std::cout << "Enter expression: ";
-		// std::getline(std::cin, expression);
+		// ST.setVariable("a", 40);
+		// ST.setVariable("b", 3);
+		
+		std::cout << "Enter expression: ";
+		std::getline(std::cin, expression);
 		// std::cout << "Enter variables: ";
 		// int value;
 		// while (std::cin >> value)
@@ -72,14 +73,14 @@ int main()
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		std::unique_ptr<Node> tree = parser(tokens, ST);
+		// std::unique_ptr<Node> tree = parser(tokens, ST);
 
 		// for(auto& c:tokens)
 		// 	printNode(c);
-		VM vm;
-		vm.compile(tree.get());
-		vm.visualize();
-		std::cout << "\nValue: " << vm.execute(ST) << "\n";
+		// VM vm;
+		// vm.compile(tree.get());
+		// vm.visualize();
+		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
 		// clear(tree);
 	}
 	catch(std::exception& e)

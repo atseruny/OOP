@@ -24,8 +24,17 @@ int priority(Node* node)
 	return 0;
 }
 
+std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST)
+{
+	std::cout << "Is if\n";
+}
 
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST)
+std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST)
+{
+	std::cout << "Is while\n";
+}
+
+std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
 {
 	State state = Start;
 
@@ -121,4 +130,16 @@ std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST)
 	}
 
 	return std::move(operands.top());
+}
+
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST)
+{
+	if (tokens[0].type == NodeType::If)
+		return parseIf(tokens, ST);
+
+	if (tokens[0].type == NodeType::While)
+		return parseWhile(tokens, ST);
+
+	// fallback → expression
+	return parseExpression(tokens, ST);
 }

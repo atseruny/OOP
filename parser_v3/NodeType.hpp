@@ -5,7 +5,7 @@ enum Operator
 	Add,
 	Sub,
 	Div,
-	Mult
+	Mult,
 };
 
 enum NodeType
@@ -15,5 +15,8 @@ enum NodeType
 	EofEx,
 	OpBr,
 	ClBr,
-	Op
+	Op,
+	If,
+	While,
+	Comp,
 };
