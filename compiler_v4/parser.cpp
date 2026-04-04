@@ -2,6 +2,8 @@
 #include "Node.hpp"
 #include "../parser_v3/State.hpp"
 #include "SymbolTable.hpp"
+std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST);
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST);
 
 State FSM[3][6] =
 {
@@ -24,9 +26,50 @@ int priority(Node* node)
 	return 0;
 }
 
+std::unique_ptr<Node> parseCondition(std::vector<Token>& tokens, SymbolTable& ST)
+{
+	
+}
+
 std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST)
 {
-	std::cout << "Is if\n";
+    std::cout << "Is if\n";
+
+    int i = 1; // skip IF
+
+    if (tokens[i].type != NodeType::OpBr)
+        throw std::runtime_error("Expected (");
+
+    i++; // now at condition start
+
+    // collect condition until ')'
+    std::vector<Token> cond;
+
+    while (i < tokens.size() && tokens[i].type != NodeType::ClBr && tokens[i].type != NodeType::EofEx)
+    {
+        cond.push_back(tokens[i]);
+        i++;
+    }
+
+    if (i == tokens.size())
+        throw std::runtime_error("Missing )");
+
+    i++; // skip ')'
+
+    // parse condition
+    auto condition = parseCondition(cond, ST);
+
+    // rest = body (everything after ')')
+    std::vector<Token> body(tokens.begin() + i, tokens.end());
+
+    auto bodyNode = parser(body, ST);
+
+    auto node = std::make_unique<Node>(tokens[0]);
+    node->type = NodeType::If;
+    node->left = std::move(condition);
+    node->right = std::move(bodyNode);
+
+    return node;
 }
 
 std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST)

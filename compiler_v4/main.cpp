@@ -90,7 +90,7 @@ int main()
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		// std::unique_ptr<Node> tree = parser(tokens, ST);
+		std::unique_ptr<Node> tree = parser(tokens, ST);
 
 		for(auto& c:tokens)
 			printNode(c);
