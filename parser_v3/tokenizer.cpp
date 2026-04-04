@@ -52,6 +52,12 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			tokens.push_back(Token(words[i], NodeType::While));
 		else if (isComp(words[i]))
 			tokens.push_back(Token(words[i], NodeType::Comp));
+		else if (words[i] == "=")
+			tokens.push_back(Token(words[i], NodeType::Assign));
+		else if (words[i] == "!")
+			tokens.push_back(Token(words[i], NodeType::Not));
+		else if (words[i] == ";")
+			tokens.push_back(Token(words[i], NodeType::Semi));
 		else
 			throw std::runtime_error("unexpected token");
 	}

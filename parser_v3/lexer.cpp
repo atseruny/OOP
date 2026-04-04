@@ -60,6 +60,8 @@ std::vector<std::string> lexer(std::stringstream& line)
 				words.back() += ch;
 			}
 		}
+		else if (ch == ';')
+			words.push_back(std::string(1, ch));
 		else
 			throw std::runtime_error("unexpected input");
 	}

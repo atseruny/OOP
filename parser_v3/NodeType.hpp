@@ -19,4 +19,7 @@ enum NodeType
 	If,
 	While,
 	Comp,
+	Assign,
+	Not,
+	Semi,
 };
