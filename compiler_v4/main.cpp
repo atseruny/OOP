@@ -33,7 +33,24 @@ void printNode(const Token& node)
 		case NodeType::EofEx:
 			std::cout << "Type: End of Expression\n";
 			break;
-		
+		case NodeType::If:
+			std::cout << "Type: If\n";
+			break;
+		case NodeType::While:
+			std::cout << "Type: While\n";
+			break;
+		case NodeType::Comp:
+			std::cout << "Type: Comparison, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::Assign:
+			std::cout << "Type: Assignment, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::Not:
+			std::cout << "Type: Not, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::Semi:
+			std::cout << "Type: Semicolon, Symbol: " << node.value << "\n";
+			break;
 		default:
 			std::cout << "Type: Unknown\n";
 			break;
@@ -75,8 +92,8 @@ int main()
 		std::vector<Token> tokens = tokenizer(v);
 		// std::unique_ptr<Node> tree = parser(tokens, ST);
 
-		// for(auto& c:tokens)
-		// 	printNode(c);
+		for(auto& c:tokens)
+			printNode(c);
 		// VM vm;
 		// vm.compile(tree.get());
 		// vm.visualize();
