@@ -13,16 +13,16 @@ enum NodeType
 	Num,
 	Var,
 	EofEx,
-	OpBr,
-	ClBr,
-	Op,
+	OpBr,		// (
+	ClBr,		// )
+	Op,			// + - * /
 	If,
 	While,
-	Comp,
-	Assign,
-	Not,
-	Semi,
-	OpBody,
-	ClBody,
-	Decl,
+	Comp,		// > < >= <= == !=
+	Assign,		// =
+	Not,		// !
+	Semi,		// ;
+	OpBody,		// {
+	ClBody,		// }
+	Decl,		// int
 };
