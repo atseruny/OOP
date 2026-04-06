@@ -22,4 +22,7 @@ enum NodeType
 	Assign,
 	Not,
 	Semi,
+	OpBody,
+	ClBody,
+	Decl,
 };

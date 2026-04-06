@@ -36,6 +36,8 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 	{
 		if (words[i].empty())
 			continue;
+		else if (words[i] == "int")
+			tokens.push_back(Token(words[i], NodeType::Decl));
 		else if (isNum(words[i]))
 			tokens.push_back(Token(words[i], NodeType::Num));
 		else if (isVar(words[i]))
@@ -58,6 +60,10 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			tokens.push_back(Token(words[i], NodeType::Not));
 		else if (words[i] == ";")
 			tokens.push_back(Token(words[i], NodeType::Semi));
+		else if (words[i] == "{")
+			tokens.push_back(Token(words[i], NodeType::OpBody));
+		else if (words[i] == "}")
+			tokens.push_back(Token(words[i], NodeType::ClBody));
 		else
 			throw std::runtime_error("unexpected token");
 	}
