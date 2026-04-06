@@ -2,6 +2,7 @@
 #include "../parser_v3/State.hpp"
 #include "SymbolTable.hpp"
 #include "VM.hpp"
+#include <fstream>
 
 std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST);
 std::vector<std::string> lexer(std::stringstream& line);
@@ -51,6 +52,15 @@ void printNode(const Token& node)
 		case NodeType::Semi:
 			std::cout << "Type: Semicolon, Symbol: " << node.value << "\n";
 			break;
+		case NodeType::OpBody:
+			std::cout << "Type: Open Curly Bracket, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::ClBody:
+			std::cout << "Type: Close Curly Bracket, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::Decl:
+			std::cout << "Type: Declaration, Symbol: " << node.value << "\n";
+			break;
 		default:
 			std::cout << "Type: Unknown\n";
 			break;
@@ -68,19 +78,33 @@ void printNode(const Token& node)
 // 	delete node;
 // }
 
-int main()
+int main(int argc, char** argv)
 {
+	if (argc != 2)
+	{
+		std::cerr << "Error: Expecting a file with code\n";
+		return 1;
+	}
+	std::ifstream file(argv[1]);
+	if (!file)
+	{
+		std::cerr << "Error: Cannot open file\n";
+		return 1;
+	}
+
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+
+	std::string expression = buffer.str();
+
 	// Node* tree;
 	try
 	{
-		std::string expression;
 		// expression = "a+6*7-b - 4 + 4 / 2";
 		SymbolTable ST;
 		// ST.setVariable("a", 40);
 		// ST.setVariable("b", 3);
-		
-		std::cout << "Enter expression: ";
-		std::getline(std::cin, expression);
+
 		// std::cout << "Enter variables: ";
 		// int value;
 		// while (std::cin >> value)
@@ -90,7 +114,7 @@ int main()
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		std::unique_ptr<Node> tree = parser(tokens, ST);
+		// std::unique_ptr<Node> tree = parser(tokens, ST);
 
 		for(auto& c:tokens)
 			printNode(c);
