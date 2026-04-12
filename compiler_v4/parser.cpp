@@ -170,44 +170,158 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 	return std::move(operands.top());
 }
 
-std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int pos)
+std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
-    auto block = std::make_unique<BlockNode>();
+	if (tokens[pos].type != NodeType::Var)
+		throw std::runtime_error("Expected variable name");
+	
+	if (!ST.isDeclared(tokens[pos].value))
+		throw std::runtime_error("Variable " + tokens[pos].value + " is not declared");
+		
+	auto node = std::make_unique<Node>(NodeType::Assign);
+	node->left = std::make_unique<Node>(tokens[pos]);
+	node->left->symAddr = ST.getAddress(tokens[pos].value);
 
-    int i = 0;
+	pos++;
 
-    if (tokens[i].type != NodeType::OpBrace)
-        throw std::runtime_error("Expected {");
+	if (tokens[pos].type != NodeType::Assign)
+		throw std::runtime_error("Expected =");
 
-    i++; // skip {
+	pos++;
 
-    while (i < tokens.size() && tokens[i].type != NodeType::ClBrace)
-    {
-        std::vector<Token> stmt;
+	std::vector<Token> expr;
+	while (tokens[pos].type != NodeType::Semi)
+	{
+		if (tokens[pos].type == NodeType::EofEx)
+			throw std::runtime_error("Missing ;");
+		expr.push_back(tokens[pos++]);
+	}
+	expr.push_back(Token("", NodeType::EofEx));
+	node->right = parseExpression(expr, ST);
+	pos++;
+	return node;
+}
 
-        // collect one statement
-        while (i < tokens.size() && tokens[i].type != NodeType::Semicolon)
-        {
-            stmt.push_back(tokens[i]);
-            i++;
-        }
-
-        if (i >= tokens.size())
-            throw std::runtime_error("Missing ;");
-
-        i++; // skip ;
-
-        block->statements.push_back(parseStatement(stmt, ST));
-    }
-
-    if (i >= tokens.size())
-        throw std::runtime_error("Missing }");
-
-    return block;
+std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	if (tokens[pos].type != NodeType::If)
+		throw std::runtime_error("Expected if");
+	
+	pos++;
+	std::vector<Token> cond;
+	
+	if (tokens[pos].type != NodeType::OpBr)
+		throw std::runtime_error("Expected (");
+	
+	pos++;
+	
+	while (tokens[pos].type != NodeType::ClBr)
+	{
+		if (tokens[pos].type == NodeType::EofEx)
+			throw std::runtime_error("Missing )");
+		cond.push_back(tokens[pos++]);
+	}
+	cond.push_back(Token("", NodeType::EofEx));
+	
+	pos++;
+	
+	auto node = std::make_unique<IfNode>();
+	node->condition = parseExpression(cond, ST);
+	
+	if (tokens[pos].type != NodeType::OpBody)
+		throw std::runtime_error("Expected {");
+	
+	node->trueBranch = parseBlock(tokens, ST, pos);
+	
+	if (tokens[pos].type == NodeType::Else)
+	{
+		pos++;
+		if (tokens[pos].type == NodeType::If)
+			node->falseBranch = parseIf(tokens, ST, pos);
+		else if (tokens[pos].type == NodeType::OpBody)
+			node->falseBranch = parseBlock(tokens, ST, pos);
+		else
+			throw std::runtime_error("Expected if or { after else");
+	}
+	return node;
 }
 
 
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int pos)
+std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	if (tokens[pos].type != NodeType::Decl)
+		throw std::runtime_error("Expected type");
+
+	pos++;
+
+	if (tokens[pos].type != NodeType::Var)
+		throw std::runtime_error("Expected variable name");
+
+	std::string varName = tokens[pos].value;
+
+	size_t addr = ST.getAddress(varName);
+
+	pos++;
+
+	if (tokens[pos].type != NodeType::Semi)
+		throw std::runtime_error("Missing ; after declaration");
+
+	pos++;
+
+	auto node = std::make_unique<Node>(NodeType::Decl);
+	node->name = varName;
+	node->symAddr = addr;
+
+	return node;
+}
+
+
+std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	if (tokens[pos].type == NodeType::If)
+		return parseIf(tokens, ST, pos);
+
+	// if (tokens[pos].type == NodeType::While)
+	//     return parseWhile(tokens, ST, pos);
+
+	if (tokens[pos].type == NodeType::Decl)
+		return parseVarDecl(tokens, ST, pos);
+
+	if (tokens[pos].type == NodeType::Var &&
+		tokens[pos + 1].type == NodeType::Assign)
+		return parseAssign(tokens, ST, pos);
+
+	// expression
+	// auto node = parseExpression(tokens, ST); // ⚠️ you must adapt this later
+	// pos++; // temporary fix
+
+	// return node;
+}
+
+std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	auto block = std::make_unique<BlockNode>();
+
+	if (tokens[pos].type != NodeType::OpBody)
+		throw std::runtime_error("Expected {");
+
+	pos++;
+
+	while (tokens[pos].type != NodeType::ClBody)
+	{
+		if (tokens[pos].type == NodeType::EofEx)
+			throw std::runtime_error("Missing }");
+
+		block->statements.push_back(parseStatement(tokens, ST, pos));
+	}
+
+	pos++;
+
+	return block;
+}
+
+
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
 	if (tokens[pos].type == NodeType::OpBody)
 		return parseBlock(tokens, ST, pos);

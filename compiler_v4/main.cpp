@@ -7,23 +7,18 @@ void printNode(const Token& node)
 		case NodeType::Num:
 			std::cout << "Type: Number, Value: " << node.value << "\n";
 			break;
-
 		case NodeType::Var:
 			std::cout << "Type: Variable, Name: " << node.value << "\n";
 			break;
-
 		case NodeType::Op:
 			std::cout << "Type: Operator: " << node.value << "\n";
 			break;
-
 		case NodeType::OpBr:
 			std::cout << "Type: Open Bracket, Symbol: " << node.value << "\n";
 			break;
-
 		case NodeType::ClBr:
 			std::cout << "Type: Close Bracket, Symbol: " << node.value << "\n";
 			break;
-
 		case NodeType::EofEx:
 			std::cout << "Type: End of Expression\n";
 			break;
@@ -105,9 +100,10 @@ int main(int argc, char** argv)
 
 		std::stringstream line(expression);
 
+		int pos = 0;
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		std::unique_ptr<Node> tree = parser(tokens, ST, 0);
+		std::unique_ptr<Node> tree = parser(tokens, ST, pos);
 
 		for(auto& c:tokens)
 			printNode(c);

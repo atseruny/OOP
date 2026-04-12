@@ -18,6 +18,7 @@ enum NodeType
 	Op,			// + - * /
 	If,
 	While,
+	Else,
 	Comp,		// > < >= <= == !=
 	Assign,		// =
 	Not,		// !
@@ -26,4 +27,5 @@ enum NodeType
 	ClBody,		// }
 	Decl,		// int
 	Block,		// {}
+
 };

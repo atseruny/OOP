@@ -38,6 +38,12 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			continue;
 		else if (words[i] == "int")
 			tokens.push_back(Token(words[i], NodeType::Decl));
+		else if (words[i] == "if")
+			tokens.push_back(Token(words[i], NodeType::If));
+		else if (words[i] == "else")
+			tokens.push_back(Token(words[i], NodeType::Else));
+		else if (words[i] == "while")
+			tokens.push_back(Token(words[i], NodeType::While));
 		else if (isNum(words[i]))
 			tokens.push_back(Token(words[i], NodeType::Num));
 		else if (isVar(words[i]))
@@ -48,10 +54,6 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			tokens.push_back(Token(words[i], NodeType::ClBr));
 		else if (words[i] == "+" || words[i] == "-" || words[i] == "*" || words[i] == "/")
 			tokens.push_back(Token(words[i], NodeType::Op));
-		else if (words[i] == "if")
-			tokens.push_back(Token(words[i], NodeType::If));
-		else if (words[i] == "while")
-			tokens.push_back(Token(words[i], NodeType::While));
 		else if (isComp(words[i]))
 			tokens.push_back(Token(words[i], NodeType::Comp));
 		else if (words[i] == "=")

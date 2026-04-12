@@ -9,5 +9,5 @@ public:
 	std::unique_ptr<Node> body;
 
 	WhileNode() : Node(NodeType::While) { }
-	~WhileNode() { }
+	~WhileNode() = default;
 };

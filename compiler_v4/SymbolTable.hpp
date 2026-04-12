@@ -13,4 +13,5 @@ public:
 	size_t getAddress(const std::string&);
 	void setVariable(const std::string&, double);
 	double getValueByAddress(size_t) const;
+	bool isDeclared(const std::string&) const;
 };
