@@ -1,11 +1,4 @@
-#include "../parser_v3/Token.hpp"
-#include "../parser_v3/State.hpp"
-#include "SymbolTable.hpp"
-#include "VM.hpp"
-#include <fstream>
-
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST);
-std::vector<std::string> lexer(std::stringstream& line);
+#include "Expr.hpp"
 
 void printNode(const Token& node)
 {
@@ -114,7 +107,7 @@ int main(int argc, char** argv)
 
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		// std::unique_ptr<Node> tree = parser(tokens, ST);
+		std::unique_ptr<Node> tree = parser(tokens, ST, 0);
 
 		for(auto& c:tokens)
 			printNode(c);

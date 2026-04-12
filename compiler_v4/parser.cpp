@@ -1,9 +1,4 @@
-#include "../parser_v3/Token.hpp"
-#include "Node.hpp"
-#include "../parser_v3/State.hpp"
-#include "SymbolTable.hpp"
-std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST);
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST);
+#include "Expr.hpp"
 
 State FSM[3][6] =
 {
@@ -26,56 +21,56 @@ int priority(Node* node)
 	return 0;
 }
 
-std::unique_ptr<Node> parseCondition(std::vector<Token>& tokens, SymbolTable& ST)
-{
+// std::unique_ptr<Node> parseCondition(std::vector<Token>& tokens, SymbolTable& ST)
+// {
 	
-}
+// }
 
-std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST)
-{
-    std::cout << "Is if\n";
+// std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST)
+// {
+//     std::cout << "Is if\n";
 
-    int i = 1; // skip IF
+//     int i = 1; // skip IF
 
-    if (tokens[i].type != NodeType::OpBr)
-        throw std::runtime_error("Expected (");
+//     if (tokens[i].type != NodeType::OpBr)
+//         throw std::runtime_error("Expected (");
 
-    i++; // now at condition start
+//     i++; // now at condition start
 
-    // collect condition until ')'
-    std::vector<Token> cond;
+//     // collect condition until ')'
+//     std::vector<Token> cond;
 
-    while (i < tokens.size() && tokens[i].type != NodeType::ClBr && tokens[i].type != NodeType::EofEx)
-    {
-        cond.push_back(tokens[i]);
-        i++;
-    }
+//     while (i < tokens.size() && tokens[i].type != NodeType::ClBr && tokens[i].type != NodeType::EofEx)
+//     {
+//         cond.push_back(tokens[i]);
+//         i++;
+//     }
 
-    if (i == tokens.size())
-        throw std::runtime_error("Missing )");
+//     if (i == tokens.size())
+//         throw std::runtime_error("Missing )");
 
-    i++; // skip ')'
+//     i++; // skip ')'
 
-    // parse condition
-    auto condition = parseCondition(cond, ST);
+//     // parse condition
+//     auto condition = parseCondition(cond, ST);
 
-    // rest = body (everything after ')')
-    std::vector<Token> body(tokens.begin() + i, tokens.end());
+//     // rest = body (everything after ')')
+//     std::vector<Token> body(tokens.begin() + i, tokens.end());
 
-    auto bodyNode = parser(body, ST);
+//     auto bodyNode = parser(body, ST);
 
-    auto node = std::make_unique<Node>(tokens[0]);
-    node->type = NodeType::If;
-    node->left = std::move(condition);
-    node->right = std::move(bodyNode);
+//     auto node = std::make_unique<Node>(tokens[0]);
+//     node->type = NodeType::If;
+//     node->left = std::move(condition);
+//     node->right = std::move(bodyNode);
 
-    return node;
-}
+//     return node;
+// }
 
-std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST)
-{
-	std::cout << "Is while\n";
-}
+// std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST)
+// {
+// 	std::cout << "Is while\n";
+// }
 
 std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
 {
@@ -175,14 +170,54 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 	return std::move(operands.top());
 }
 
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST)
+std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int pos)
 {
-	if (tokens[0].type == NodeType::If)
-		return parseIf(tokens, ST);
+    auto block = std::make_unique<BlockNode>();
 
-	if (tokens[0].type == NodeType::While)
-		return parseWhile(tokens, ST);
+    int i = 0;
 
-	// fallback → expression
-	return parseExpression(tokens, ST);
+    if (tokens[i].type != NodeType::OpBrace)
+        throw std::runtime_error("Expected {");
+
+    i++; // skip {
+
+    while (i < tokens.size() && tokens[i].type != NodeType::ClBrace)
+    {
+        std::vector<Token> stmt;
+
+        // collect one statement
+        while (i < tokens.size() && tokens[i].type != NodeType::Semicolon)
+        {
+            stmt.push_back(tokens[i]);
+            i++;
+        }
+
+        if (i >= tokens.size())
+            throw std::runtime_error("Missing ;");
+
+        i++; // skip ;
+
+        block->statements.push_back(parseStatement(stmt, ST));
+    }
+
+    if (i >= tokens.size())
+        throw std::runtime_error("Missing }");
+
+    return block;
 }
+
+
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int pos)
+{
+	if (tokens[pos].type == NodeType::OpBody)
+		return parseBlock(tokens, ST, pos);
+	// if (tokens[0].type == NodeType::If)
+	// 	return parseIf(tokens, ST);
+
+	// if (tokens[0].type == NodeType::While)
+	// 	return parseWhile(tokens, ST);
+
+	// // fallback → expression
+	// return parseExpression(tokens, ST);
+}
+

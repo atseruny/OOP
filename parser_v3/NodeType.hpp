@@ -25,4 +25,5 @@ enum NodeType
 	OpBody,		// {
 	ClBody,		// }
 	Decl,		// int
+	Block,		// {}
 };

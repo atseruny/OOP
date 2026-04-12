@@ -6,48 +6,47 @@
 #include <sstream>
 #include <memory>
 
-struct Node
+class Node
 {
-	int value;
-	size_t symAddr;
-	Operator op;
+public:
 	NodeType type;
-	std::unique_ptr<Node> left;
-	std::unique_ptr<Node> right;
 	std::string name;
 
+	std::unique_ptr<Node> left;
+	std::unique_ptr<Node> right;
+
+	int value = 0;
+	size_t symAddr = 0;
+	Operator op;
+
+public:
+	Node(NodeType t) : type(t) {}
 
 	Node(const Token& token)
 	{
-		left = nullptr;
-		right = nullptr;
-		symAddr = 0;
-		value = 0;
-		name = token.value;
 		type = token.type;
+		name = token.value;
+
 		switch (token.type)
 		{
 		case NodeType::Num:
 			value = std::atoi(token.value.c_str());
 			break;
+
 		case NodeType::Var:
 			name = token.value;
 			break;
+
 		case NodeType::Op:
-			if (token.value == "+")
-				op = Operator::Add;
-			else if (token.value == "-")
-				op = Operator::Sub;
-			else if (token.value == "*")
-				op = Operator::Mult;
-			else if (token.value == "/")
-				op = Operator::Div;
+			if (token.value == "+") op = Operator::Add;
+			else if (token.value == "-") op = Operator::Sub;
+			else if (token.value == "*") op = Operator::Mult;
+			else if (token.value == "/") op = Operator::Div;
 			break;
+
 		default:
 			break;
 		}
 	}
-	~Node() {};
+	virtual ~Node() = default;
 };
-
-
