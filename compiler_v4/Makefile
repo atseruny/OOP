@@ -1,4 +1,4 @@
-NAME = ast
+NAME = Compiler
 CXX = c++
 CXXFLAGS = -Wall -Wextra 
 

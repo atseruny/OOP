@@ -10,6 +10,20 @@
 #include "../parser_v3/State.hpp"
 
 
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 std::vector<std::string> lexer(std::stringstream& line);
+std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
+
+
+State FSM[3][6] =
+{
+	// Start
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error },
+
+	// Wait_operator
+	{ State::Error, State::Error, State::End, State::Error, State::Wait_operator, State::Wait_operand },
+
+	// Wait_operand
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error }
+};
+

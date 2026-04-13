@@ -1,17 +1,5 @@
 #include "Expr.hpp"
 
-State FSM[3][6] =
-{
-	// Start
-	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error },
-
-	// Wait_operator
-	{ State::Error, State::Error, State::End, State::Error, State::Wait_operator, State::Wait_operand },
-
-	// Wait_operand
-	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error }
-};
-
 int priority(Node* node)
 {
 	if (node->name == "*" || node->name == "/")
@@ -33,7 +21,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		state = FSM[static_cast<int>(state)][static_cast<int>(t.type)];
 
 		if (state == State::Error)
-			throw std::runtime_error("unexpected token");
+			throw std::runtime_error("unexpected token " + t.value);
 		if (state == State::End)
 			break;
 
@@ -248,14 +236,38 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 
 	pos++;
 
-	if (tokens[pos].type != NodeType::Semi)
-		throw std::runtime_error("Missing ; after declaration");
-
-	pos++;
+	if (tokens[pos].type == NodeType::Assign)
+	{
+		pos--;
+		return parseAssign(tokens, ST, pos);
+	}
 
 	auto node = std::make_unique<Node>(NodeType::Decl);
 	node->name = varName;
 	node->symAddr = addr;
+
+	if (tokens[pos].type == NodeType::Assign)
+	{
+		pos++;
+
+		std::vector<Token> expr;
+
+		while (tokens[pos].type != NodeType::Semi)
+		{
+			if (tokens[pos].type == NodeType::EofEx)
+				throw std::runtime_error("Missing ';'");
+
+			expr.push_back(tokens[pos++]);
+		}
+		expr.push_back(Token("", NodeType::EofEx));
+
+		node->right = parseExpression(expr, ST);
+	}
+
+	if (tokens[pos].type != NodeType::Semi)
+		throw std::runtime_error("Missing ';' after declaration");
+
+	pos++;
 
 	return node;
 }
@@ -325,16 +337,21 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
-	return parseStatement(tokens, ST, pos);
-	// if (tokens[pos].type == NodeType::OpBody)
-	// 	return parseBlock(tokens, ST, pos);
-	// if (tokens[0].type == NodeType::If)
-	// 	return parseIf(tokens, ST);
+	auto block = std::make_unique<BlockNode>();
 
-	// if (tokens[0].type == NodeType::While)
-	// 	return parseWhile(tokens, ST);
+	ST.enterScope();
 
-	// // fallback → expression
-	// return parseExpression(tokens, ST);
+	while (tokens[pos].type != NodeType::EofEx)
+	{
+		int oldPos = pos;
+
+		block->statements.push_back(parseStatement(tokens, ST, pos));
+
+		if (pos == oldPos)
+			throw std::runtime_error("Parser stuck (no progress)");
+	}
+
+	ST.exitScope();
+
+	return block;
 }
-
