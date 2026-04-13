@@ -21,58 +21,6 @@ int priority(Node* node)
 	return 0;
 }
 
-// std::unique_ptr<Node> parseCondition(std::vector<Token>& tokens, SymbolTable& ST)
-// {
-	
-// }
-
-// std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST)
-// {
-//     std::cout << "Is if\n";
-
-//     int i = 1; // skip IF
-
-//     if (tokens[i].type != NodeType::OpBr)
-//         throw std::runtime_error("Expected (");
-
-//     i++; // now at condition start
-
-//     // collect condition until ')'
-//     std::vector<Token> cond;
-
-//     while (i < tokens.size() && tokens[i].type != NodeType::ClBr && tokens[i].type != NodeType::EofEx)
-//     {
-//         cond.push_back(tokens[i]);
-//         i++;
-//     }
-
-//     if (i == tokens.size())
-//         throw std::runtime_error("Missing )");
-
-//     i++; // skip ')'
-
-//     // parse condition
-//     auto condition = parseCondition(cond, ST);
-
-//     // rest = body (everything after ')')
-//     std::vector<Token> body(tokens.begin() + i, tokens.end());
-
-//     auto bodyNode = parser(body, ST);
-
-//     auto node = std::make_unique<Node>(tokens[0]);
-//     node->type = NodeType::If;
-//     node->left = std::move(condition);
-//     node->right = std::move(bodyNode);
-
-//     return node;
-// }
-
-// std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST)
-// {
-// 	std::cout << "Is while\n";
-// }
-
-
 std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
 {
 	State state = State::Start;
@@ -248,6 +196,40 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& 
 	return node;
 }
 
+std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	if (tokens[pos].type != NodeType::While)
+		throw std::runtime_error("Expected while");
+	
+	pos++;
+	std::vector<Token> cond;
+	
+	if (tokens[pos].type != NodeType::OpBr)
+		throw std::runtime_error("Expected (");
+	
+	pos++;
+	
+	while (tokens[pos].type != NodeType::ClBr)
+	{
+		if (tokens[pos].type == NodeType::EofEx)
+			throw std::runtime_error("Missing )");
+		cond.push_back(tokens[pos++]);
+	}
+	cond.push_back(Token("", NodeType::EofEx));
+	
+	pos++;
+	
+	auto node = std::make_unique<WhileNode>();
+	node->condition = parseExpression(cond, ST);
+	
+	if (tokens[pos].type != NodeType::OpBody)
+		throw std::runtime_error("Expected {");
+	
+	node->body = parseBlock(tokens, ST, pos);
+	
+	return node;
+}
+
 
 std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
@@ -299,20 +281,19 @@ std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST
 		case NodeType::OpBody:
 			return parseBlock(tokens, ST, pos);
 		case NodeType::While:
-			std::cout <<"Is while\n";
-			break;
+			return parseWhile(tokens, ST, pos);
 		default:
 			break;
 	}
+	std::vector<Token> expr;
+	while (static_cast<size_t>(pos) < tokens.size() && tokens[pos].type != NodeType::Semi)
+		expr.push_back(tokens[pos++]);
 
-	auto node = parseExpression(tokens, ST);
-
-	// if (tokens[pos].type != NodeType::Semi)
-	// 	throw std::runtime_error("Missing ';' after expression");
-
+	if (static_cast<size_t>(pos) >= tokens.size())
+		throw std::runtime_error("Missing ';'");
+	expr.push_back(Token("", NodeType::EofEx));
 	pos++;
-
-	return node;
+	return parseExpression(expr, ST);
 }
 
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
@@ -333,7 +314,9 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 		block->statements.push_back(parseStatement(tokens, ST, pos));
 	}
+
 	ST.exitScope();
+
 	pos++;
 
 	return block;
@@ -342,8 +325,9 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
-	if (tokens[pos].type == NodeType::OpBody)
-		return parseBlock(tokens, ST, pos);
+	return parseStatement(tokens, ST, pos);
+	// if (tokens[pos].type == NodeType::OpBody)
+	// 	return parseBlock(tokens, ST, pos);
 	// if (tokens[0].type == NodeType::If)
 	// 	return parseIf(tokens, ST);
 
