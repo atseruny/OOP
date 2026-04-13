@@ -72,6 +72,7 @@ int priority(Node* node)
 // 	std::cout << "Is while\n";
 // }
 
+
 std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
 {
 	State state = State::Start;
@@ -198,6 +199,7 @@ std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, i
 	}
 	expr.push_back(Token("", NodeType::EofEx));
 	node->right = parseExpression(expr, ST);
+
 	pos++;
 	return node;
 }
@@ -253,12 +255,13 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 		throw std::runtime_error("Expected type");
 
 	pos++;
-
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected variable name");
+	
+	ST.declareVariable(tokens[pos].value);
 
 	std::string varName = tokens[pos].value;
-
+	
 	size_t addr = ST.getAddress(varName);
 
 	pos++;
@@ -278,24 +281,38 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 
 std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
-	if (tokens[pos].type == NodeType::If)
-		return parseIf(tokens, ST, pos);
+	if (static_cast<size_t>(pos) >= tokens.size())
+		throw std::runtime_error("Unexpected end of input");
 
-	// if (tokens[pos].type == NodeType::While)
-	//     return parseWhile(tokens, ST, pos);
+	switch (tokens[pos].type)
+	{
+		case NodeType::If:
+			return parseIf(tokens, ST, pos);
+		case NodeType::Decl:
+			return parseVarDecl(tokens, ST, pos);
+		case NodeType::Var:
+		{
+			if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::Assign)
+				return parseAssign(tokens, ST, pos);
+			break;
+		}
+		case NodeType::OpBody:
+			return parseBlock(tokens, ST, pos);
+		case NodeType::While:
+			std::cout <<"Is while\n";
+			break;
+		default:
+			break;
+	}
 
-	if (tokens[pos].type == NodeType::Decl)
-		return parseVarDecl(tokens, ST, pos);
+	auto node = parseExpression(tokens, ST);
 
-	if (tokens[pos].type == NodeType::Var &&
-		tokens[pos + 1].type == NodeType::Assign)
-		return parseAssign(tokens, ST, pos);
+	// if (tokens[pos].type != NodeType::Semi)
+	// 	throw std::runtime_error("Missing ';' after expression");
 
-	// expression
-	// auto node = parseExpression(tokens, ST); // ⚠️ you must adapt this later
-	// pos++; // temporary fix
+	pos++;
 
-	// return node;
+	return node;
 }
 
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
@@ -307,6 +324,8 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 	pos++;
 
+	ST.enterScope();
+
 	while (tokens[pos].type != NodeType::ClBody)
 	{
 		if (tokens[pos].type == NodeType::EofEx)
@@ -314,7 +333,7 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 		block->statements.push_back(parseStatement(tokens, ST, pos));
 	}
-
+	ST.exitScope();
 	pos++;
 
 	return block;
