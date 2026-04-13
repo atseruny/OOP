@@ -96,7 +96,7 @@ static Node *parse_term(char **s)
 				destroy_tree(left);
 				return nullptr;
 			}
-			left = new Node(0, MULTI, left, right);
+			left = new Node(0, NodeType::MULTI, left, right);
 		}
 		else if (accept(s, '/'))
 		{
@@ -106,7 +106,7 @@ static Node *parse_term(char **s)
 				destroy_tree(left);
 				return nullptr;
 			}
-			left = new Node(0, DIV, left, right);
+			left = new Node(0, NodeType::DIV, left, right);
 		}
 		else
 			break;
@@ -129,7 +129,7 @@ static Node *parse_expr_r(char **s)
 				destroy_tree(left);
 				return nullptr;
 			}
-			left = new Node(0, ADD, left, right);
+			left = new Node(0, NodeType::ADD, left, right);
 		}
 		else if (accept(s, '-'))
 		{
@@ -139,7 +139,7 @@ static Node *parse_expr_r(char **s)
 				destroy_tree(left);
 				return nullptr;
 			}
-			left = new Node(0, SUB, left, right);
+			left = new Node(0, NodeType::SUB, left, right);
 		}
 		else
 			break;
@@ -168,28 +168,28 @@ int eval_tree(const Node *tree, const std::map<std::string, int>& vars)
 		throw std::runtime_error("Null tree");
 	switch (tree->type)
 	{
-	case ADD:
-		return (eval_tree(tree->left, vars) + eval_tree(tree->right, vars));
-	case SUB:
-		return eval_tree(tree->left, vars) - eval_tree(tree->right, vars);
-	case MULTI:
-		return eval_tree(tree->left, vars) * eval_tree(tree->right, vars);
-	case DIV:
-	{
-		int right = eval_tree(tree->right, vars);
-		if (right == 0)
-			throw std::runtime_error("Division by zero");
-		return eval_tree(tree->left, vars) / right;
-	}
-	case VAL:
-		return tree->value;
-	case VAR:
-	{
-		auto val = vars.find(tree->var);
-		if (val == vars.end())
-			throw std::runtime_error("Undefined variable: " + tree->var);
-		return val->second;
-	}
+		case NodeType::ADD:
+			return (eval_tree(tree->left, vars) + eval_tree(tree->right, vars));
+		case NodeType::SUB:
+			return eval_tree(tree->left, vars) - eval_tree(tree->right, vars);
+		case NodeType::MULTI:
+			return eval_tree(tree->left, vars) * eval_tree(tree->right, vars);
+		case NodeType::DIV:
+		{
+			int right = eval_tree(tree->right, vars);
+			if (right == 0)
+				throw std::runtime_error("Division by zero");
+			return eval_tree(tree->left, vars) / right;
+		}
+		case NodeType::VAL:
+			return tree->value;
+		case NodeType::VAR:
+		{
+			auto val = vars.find(tree->var);
+			if (val == vars.end())
+				throw std::runtime_error("Undefined variable: " + tree->var);
+			return val->second;
+		}
 	}
 	return 0;
 }

@@ -4,7 +4,7 @@
 #include <exception>
 #include <map>
 
-enum NodeType
+enum class NodeType
 {
 	ADD,
 	SUB,
@@ -24,9 +24,9 @@ struct Node
 
 	Node(int v, NodeType _type, Node* l, Node *r, const std::string& var_name) : value(v), type(_type), left(l), right(r), var(var_name) {};
 	Node(int v, NodeType _type, Node* l, Node *r) : value(v), type(_type), left(l), right(r) {};
-	Node() : value(0), type(VAL), left(nullptr), right(nullptr) {};
-	Node(int v) : value(v), type(VAL), left(nullptr), right(nullptr) {};
-	Node(const std::string _var) : value(0), type(VAR), left(nullptr), right(nullptr), var(_var) {};
+	Node() : value(0), type(NodeType::VAL), left(nullptr), right(nullptr) {};
+	Node(int v) : value(v), type(NodeType::VAL), left(nullptr), right(nullptr) {};
+	Node(const std::string _var) : value(0), type(NodeType::VAR), left(nullptr), right(nullptr), var(_var) {};
 	~Node() { };
 };
 

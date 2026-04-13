@@ -3,13 +3,13 @@
 State FSM[3][6] =
 {
 	// Start
-	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error },
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error },
 
 	// Wait_operator
-	{ Error, Error, End, Error, Wait_operator, Wait_operand },
+	{ State::Error, State::Error, State::End, State::Error, State::Wait_operator, State::Wait_operand },
 
 	// Wait_operand
-	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error }
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error }
 };
 
 int priority(Node* node)
@@ -74,18 +74,18 @@ int priority(Node* node)
 
 std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
 {
-	State state = Start;
+	State state = State::Start;
 
 	std::stack<std::unique_ptr<Node>> operators;
 	std::stack<std::unique_ptr<Node>> operands;
 
 	for (const Token& t : tokens)
 	{
-		state = FSM[state][t.type];
+		state = FSM[static_cast<int>(state)][static_cast<int>(t.type)];
 
-		if (state == Error)
+		if (state == State::Error)
 			throw std::runtime_error("unexpected token");
-		if (state == End)
+		if (state == State::End)
 			break;
 
 		std::unique_ptr<Node> n = std::make_unique<Node>(t);
@@ -100,7 +100,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		else if (t.type == NodeType::Op)
 		{
 			while (!operators.empty() &&
-				operators.top()->type != OpBr &&
+				operators.top()->type != NodeType::OpBr &&
 				priority(operators.top().get()) >= priority(n.get()))
 			{
 				std::unique_ptr<Node> op = std::move(operators.top());
@@ -119,11 +119,11 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 			}
 			operators.push(std::move(n));
 		}
-		else if (t.type == OpBr)
+		else if (t.type == NodeType::OpBr)
 			operators.push(std::move(n));
-		else if (t.type == ClBr)
+		else if (t.type == NodeType::ClBr)
 		{
-			while (!operators.empty() && operators.top()->type != OpBr)
+			while (!operators.empty() && operators.top()->type != NodeType::OpBr)
 			{
 				std::unique_ptr<Node> op = std::move(operators.top());
 				operators.pop();
@@ -147,7 +147,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		}
 	}
 
-	if (state != End)
+	if (state != State::End)
 		throw std::runtime_error("unexpected end");
 
 	while (!operators.empty())

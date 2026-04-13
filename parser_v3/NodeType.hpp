@@ -1,6 +1,6 @@
 #pragma once
 
-enum Operator
+enum class Operator
 {
 	Add,
 	Sub,
@@ -8,7 +8,7 @@ enum Operator
 	Mult,
 };
 
-enum NodeType
+enum class NodeType
 {
 	Num,
 	Var,

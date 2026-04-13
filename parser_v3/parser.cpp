@@ -4,14 +4,14 @@
 
 State FSM[3][6] =
 {
-	/* Start */
-	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error },
+	// Start
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error },
 
-	/* Wait_operator */
-	{ Error, Error, End, Error, Wait_operator, Wait_operand },
+	// Wait_operator
+	{ State::Error, State::Error, State::End, State::Error, State::Wait_operator, State::Wait_operand },
 
-	/* Wait_operand */
-	{ Wait_operator, Wait_operator, Error, Wait_operand, Error, Error }
+	// Wait_operand
+	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error }
 };
 
 int priority(Node* node)
@@ -25,7 +25,7 @@ int priority(Node* node)
 
 Node* parser(std::vector<Token>& tokens, std::vector<int>& vars)
 {
-	State state = Start;
+	State state = State::Start;
 	Node* n = nullptr;
 	std::stack<Node*> operators;
 	std::stack<Node*> operands;
@@ -33,11 +33,11 @@ Node* parser(std::vector<Token>& tokens, std::vector<int>& vars)
 
 	for (const Token &t : tokens)
 	{
-		state = FSM[state][t.type];
+		state = FSM[static_cast<int>(state)][static_cast<int>(t.type)];
 
-		if (state == Error)
+		if (state == State::Error)
 			throw std::runtime_error("unexpected token");
-		if (state == End)
+		if (state == State::End)
 			break;
 
 		n = new Node(t);
@@ -56,7 +56,7 @@ Node* parser(std::vector<Token>& tokens, std::vector<int>& vars)
 		else if (n->type == NodeType::Op)
 		{
 			while (!operators.empty() &&
-					operators.top()->type != OpBr &&
+					operators.top()->type != NodeType::OpBr &&
 					priority(operators.top()) >= priority(n))
 			{
 				Node* op = operators.top();
@@ -72,11 +72,11 @@ Node* parser(std::vector<Token>& tokens, std::vector<int>& vars)
 			}
 			operators.push(n);
 		}
-		else if (t.type == OpBr)
+		else if (t.type == NodeType::OpBr)
 			operators.push(n);
-		else if (t.type == ClBr)
+		else if (t.type == NodeType::ClBr)
 		{
-			while (!operators.empty() && operators.top()->type != OpBr)
+			while (!operators.empty() && operators.top()->type != NodeType::OpBr)
 			{
 				Node* op = operators.top(); operators.pop();
 				Node* right = operands.top(); operands.pop();
@@ -94,7 +94,7 @@ Node* parser(std::vector<Token>& tokens, std::vector<int>& vars)
 			delete n;
 		}
 	}
-	if (state != End)
+	if (state != State::End)
 		throw std::runtime_error("unexpected end");
 	while (!operators.empty())
 	{

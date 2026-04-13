@@ -1,6 +1,6 @@
 #pragma once
 
-enum State
+enum class State
 {
 	Start,
 	Wait_operator,
