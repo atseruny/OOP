@@ -15,7 +15,7 @@ std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& p
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 
 
-State FSM[3][6] =
+inline State FSM[3][6] =
 {
 	// Start
 	{ State::Wait_operator, State::Wait_operator, State::Error, State::Wait_operand, State::Error, State::Error },

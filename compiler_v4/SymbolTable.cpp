@@ -50,7 +50,7 @@ void SymbolTable::declareVariable(const std::string& name)
 
 	auto& current = scopes.back();
 
-	if (current.find(name) != current.end())
+	if (isDeclared(name))
 		throw std::runtime_error("Multiple definition of " + name);
 
 	size_t addr = memory.size();

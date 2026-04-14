@@ -1,11 +1,6 @@
-int b;
+int a;
 {
-	int a;
-	int b = 7;
-	while (a > 0)
-	{
-		int c;
-		b = 8;
-		c = 1;
-	}
+	a = 0;
+	int b = a + 7;
+	
 }

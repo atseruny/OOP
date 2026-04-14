@@ -232,44 +232,17 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 
 	std::string varName = tokens[pos].value;
 	
-	size_t addr = ST.getAddress(varName);
-
-	pos++;
-
-	if (tokens[pos].type == NodeType::Assign)
-	{
-		pos--;
+	if (tokens[pos + 1].type == NodeType::Assign)
 		return parseAssign(tokens, ST, pos);
-	}
-
-	auto node = std::make_unique<Node>(NodeType::Decl);
-	node->name = varName;
-	node->symAddr = addr;
-
-	if (tokens[pos].type == NodeType::Assign)
-	{
-		pos++;
-
-		std::vector<Token> expr;
-
-		while (tokens[pos].type != NodeType::Semi)
-		{
-			if (tokens[pos].type == NodeType::EofEx)
-				throw std::runtime_error("Missing ';'");
-
-			expr.push_back(tokens[pos++]);
-		}
-		expr.push_back(Token("", NodeType::EofEx));
-
-		node->right = parseExpression(expr, ST);
-	}
+	
+	pos++;
 
 	if (tokens[pos].type != NodeType::Semi)
 		throw std::runtime_error("Missing ';' after declaration");
 
 	pos++;
 
-	return node;
+	return nullptr;
 }
 
 
@@ -324,7 +297,10 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 		if (tokens[pos].type == NodeType::EofEx)
 			throw std::runtime_error("Missing }");
 
-		block->statements.push_back(parseStatement(tokens, ST, pos));
+		auto stmt = parseStatement(tokens, ST, pos);
+
+		if (stmt) // 🔥 ONLY push valid nodes
+			block->statements.push_back(std::move(stmt));
 	}
 
 	ST.exitScope();
@@ -351,7 +327,7 @@ std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& p
 			throw std::runtime_error("Parser stuck (no progress)");
 	}
 
-	ST.exitScope();
+	// ST.exitScope();
 
 	return block;
 }
