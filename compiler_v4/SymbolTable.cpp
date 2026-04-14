@@ -58,6 +58,14 @@ void SymbolTable::declareVariable(const std::string& name)
 	memory.push_back(0);
 }
 
+void SymbolTable::setVariableByAddress(size_t address, int value)
+{
+	if (address >= memory.size())
+		throw std::runtime_error("Invalid address");
+
+	memory[address] = value;
+}
+
 void SymbolTable::enterScope()
 {
 	scopes.push_back({});

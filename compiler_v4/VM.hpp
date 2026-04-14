@@ -1,11 +1,8 @@
 #pragma once
 
+#include "Expr.hpp"
 #include "Compiler.hpp"
-#include <vector>
-#include "Node.hpp"
-#include <cstdint>
 #include "SymbolTable.hpp"
-#include <iomanip>
 
 class VM
 {
@@ -14,6 +11,13 @@ private:
 	int next;
 	std::vector<Instruction> program;
 	std::vector<int> constants;
+
+	int compileNum(const Node* node);
+	int compileVar(const Node* node);
+	int compileOp(const Node* node);
+	int compileAssign(const Node* node);
+	int compileBlock(const Node* node);
+
 public:
 	VM();
 	~VM();

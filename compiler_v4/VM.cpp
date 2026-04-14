@@ -4,25 +4,39 @@ VM::VM() : regs(100), next(0) { }
 
 VM::~VM() { }
 
-int VM::compile(const Node* node)
+int VM::compileNum(const Node* node)
 {
-	if (node->type == NodeType::Num)
-	{
-		int r = next++;
-		regs[r] = node->value;
-		uint8_t cIdx = constants.size();
-		constants.push_back(node->value);
-		program.push_back({(uint8_t)OpCode::LOAD_NUM, (uint8_t)r, (uint8_t)cIdx, (uint8_t)0});
-		return r;
-	}
+	int dest = next++;
 
-	if (node->type == NodeType::Var)
-	{
-		int r = next++;
-		program.push_back({(uint8_t)OpCode::LOAD_VAR, (uint8_t)r, (uint8_t)node->symAddr, (uint8_t)0});
-		return r;
-	}
+	uint8_t cIdx = constants.size();
+	constants.push_back(node->value);
 
+	program.push_back({
+		static_cast<uint8_t>(OpCode::LOAD_NUM),
+		static_cast<uint8_t>(dest),
+		static_cast<uint8_t>(cIdx),
+		0
+	});
+
+	return dest;
+}
+
+int VM::compileVar(const Node* node)
+{
+	int dest = next++;
+
+	program.push_back({
+		static_cast<uint8_t>(OpCode::LOAD_VAR),
+		static_cast<uint8_t>(dest),
+		static_cast<uint8_t>(node->symAddr),
+		0
+	});
+
+	return dest;
+}
+
+int VM::compileOp(const Node* node)
+{
 	int l = compile(node->left.get());
 	int r = compile(node->right.get());
 
@@ -35,80 +49,121 @@ int VM::compile(const Node* node)
 		case Operator::Sub:  op = OpCode::SUB; break;
 		case Operator::Mult: op = OpCode::MUL; break;
 		case Operator::Div:  op = OpCode::DIV; break;
-		default: throw std::runtime_error("Unknown operator");
+		default:
+			throw std::runtime_error("Unknown operator");
 	}
-	program.push_back({(uint8_t)op, (uint8_t)dest, (uint8_t)l, (uint8_t)r});
+
+	program.push_back({
+		static_cast<uint8_t>(op),
+		static_cast<uint8_t>(dest),
+		static_cast<uint8_t>(l),
+		static_cast<uint8_t>(r)
+	});
+
 	return dest;
 }
 
+int VM::compileAssign(const Node* node)
+{
+	size_t addr = node->left->symAddr;
+
+	int rhs = compile(node->right.get());
+
+	//std::cout<<"rhs: "<<rhs<<"\n";
+	program.push_back({
+		static_cast<uint8_t>(OpCode::STORE_VAR),
+		static_cast<uint8_t>(rhs),
+		static_cast<uint8_t>(addr),
+		0
+	});
+
+	return rhs;
+}
+
+int VM::compileBlock(const Node* node)
+{
+	//std::cout<<"From\n";
+
+	for (auto& stmt : static_cast<const BlockNode*>(node)->statements)
+	{
+		//std::cout<<"Here\n";
+		compile(stmt.get());
+	}
+
+	return -1;
+}
+
+int VM::compile(const Node* node)
+{
+	if (!node)
+		return -1;
+
+	switch (node->type)
+	{
+		case NodeType::Num:
+			return compileNum(node);
+		case NodeType::Var:
+			return compileVar(node);
+		case NodeType::Op:
+			return compileOp(node);
+		case NodeType::Assign:
+			return compileAssign(node);
+		case NodeType::Block:
+			return compileBlock(node);
+		default:
+			throw std::runtime_error("Unknown node type in compile");
+	}
+}
 
 void VM::visualize() const
 {
-	std::cout << "\n[VM Bytecode Visualization]\n";
-	std::cout << std::left
-			<< std::setw(6)  << "Addr"
-			<< std::setw(12) << "OpCode"
-			<< std::setw(6)  << "L"
-			<< std::setw(6)  << "R"
-			<< std::setw(6)  << "Dst"
-			<< "Value\n";
-	std::cout << std::string(45, '-') << "\n";
+	std::cout << "\n[VM Assembly]\n";
+	std::cout << "----------------------\n";
 
 	for (size_t i = 0; i < program.size(); i++)
 	{
 		const auto& inst = program[i];
-		std::cout << "[" << std::setw(3) << i << "]  ";
-		std::cout << std::left << std::setw(12);
+
+		std::cout << std::setw(3) << i << ": ";
 
 		switch (static_cast<OpCode>(inst.op))
 		{
-		case OpCode::LOAD_NUM:
-			std::cout << "LOAD_CONST"
-					<< std::setw(6) << "-"
-					<< std::setw(6) << "-"
-					<< std::setw(6) << (int)inst.dest
-					<< constants[inst.left];
-			break;
-		case OpCode::LOAD_VAR:
-			std::cout << "LOAD_VAR"
-					<< std::setw(6) << (int)inst.left
-					<< std::setw(6) << "-"
-					<< std::setw(6) << (int)inst.dest
-					<< "*(" << (int)inst.dest << ")";
-			break;
-		case OpCode::ADD:
-			std::cout << "ADD"
-					<< std::setw(6) << (int)inst.left
-					<< std::setw(6) << (int)inst.right
-					<< std::setw(6) << (int)inst.dest
-					<< "*(" << (int)inst.left << ") + *(" << (int)inst.right << ")";
-			break;
-		case OpCode::SUB:
-			std::cout << "SUB"
-					<< std::setw(6) << (int)inst.left
-					<< std::setw(6) << (int)inst.right
-					<< std::setw(6) << (int)inst.dest
-					<< "*(" << (int)inst.left << ") - *(" << (int)inst.right << ")";
-			break;
-		case OpCode::MUL:
-			std::cout << "MUL"
-					<< std::setw(6) << (int)inst.left
-					<< std::setw(6) << (int)inst.right
-					<< std::setw(6) << (int)inst.dest
-					<< "*(" << (int)inst.left << ") * *(" << (int)inst.right << ")";
-			break;
-		case OpCode::DIV:
-			std::cout << "DIV"
-					<< std::setw(6) << (int)inst.left
-					<< std::setw(6) << (int)inst.right
-					<< std::setw(6) << (int)inst.dest
-					<< "*(" << (int)inst.left << ") / *(" << (int)inst.right << ")";
-			break;
+			case OpCode::LOAD_NUM:
+				std::cout << "MOV r" << static_cast<int>(inst.dest)
+						  << ", " << constants[inst.left];
+				break;
+			case OpCode::LOAD_VAR:
+				std::cout << "MOV r" << static_cast<int>(inst.dest)
+						  << ", [" << static_cast<int>(inst.left) << "]";
+				break;
+			case OpCode::ADD:
+				std::cout << "ADD r" << static_cast<int>(inst.dest)
+						  << ", r" << static_cast<int>(inst.left)
+						  << ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::SUB:
+				std::cout << "SUB r" << static_cast<int>(inst.dest)
+						  << ", r" << static_cast<int>(inst.left)
+						  << ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::MUL:
+				std::cout << "MUL r" << static_cast<int>(inst.dest)
+						  << ", r" << static_cast<int>(inst.left)
+						  << ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::DIV:
+				std::cout << "DIV r" << static_cast<int>(inst.dest)
+						  << ", r" << static_cast<int>(inst.left)
+						  << ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::STORE_VAR:
+				std::cout << "MOV [" << static_cast<int>(inst.left)
+						  << "], r"  << static_cast<int>(inst.dest);
+				break;
 		}
 		std::cout << "\n";
 	}
 }
-
 
 int VM::execute(SymbolTable& ST)
 {
@@ -135,6 +190,9 @@ int VM::execute(SymbolTable& ST)
 				if (regs[i.right] == 0)
 					throw std::runtime_error("Division by zero");
 				regs[i.dest] = regs[i.left] / regs[i.right];
+				break;
+			case OpCode::STORE_VAR:
+				ST.setVariableByAddress(i.left, regs[i.dest]);
 				break;
 		}
 	}

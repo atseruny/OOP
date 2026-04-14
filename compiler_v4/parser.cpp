@@ -299,7 +299,7 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 
 		auto stmt = parseStatement(tokens, ST, pos);
 
-		if (stmt) // 🔥 ONLY push valid nodes
+		if (stmt)
 			block->statements.push_back(std::move(stmt));
 	}
 
@@ -327,7 +327,7 @@ std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& p
 			throw std::runtime_error("Parser stuck (no progress)");
 	}
 
-	// ST.exitScope();
+	ST.exitScope();
 
 	return block;
 }

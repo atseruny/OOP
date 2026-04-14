@@ -55,16 +55,73 @@ void printNode(const Token& node)
 	}
 }
 
-// void clear(Node* node)
-// {
-// 	if (!node)
-// 		return;
+void printAST(Node* node)
+{
+	if (!node)
+		return;
 
-// 	clear(node->left);
-// 	clear(node->right);
 
-// 	delete node;
-// }
+	switch (node->type)
+	{
+		case NodeType::Num:
+			std::cout << "Num(" << node->value << ")\n";
+			return;
+		case NodeType::Var:
+			std::cout << "Var(addr=" << node->symAddr << ")\n";
+			return;
+		case NodeType::Assign:
+			std::cout << "Assign\n";
+			break;
+		case NodeType::Op:
+		{
+			switch (node->op)
+			{
+			case Operator::Add:
+				std::cout << "Add\n";
+				break;
+			case Operator::Sub:
+				std::cout << "Sub\n";
+				break;
+			case Operator::Mult:
+				std::cout << "Mult\n";
+				break;
+			case Operator::Div:
+				std::cout << "Div\n";
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+		case NodeType::Block:
+		{
+			std::cout << "Block\n";
+			BlockNode* n = dynamic_cast<BlockNode*>(node);
+			for (size_t i = 0; i < n->statements.size(); i++)
+			{
+				printAST(n->statements[i].get());
+			}
+			return;
+		}
+		default:
+			std::cout << "NodeType(" << (int)node->type << ")\n";
+			break;
+	}
+
+	if (node->left)
+	{
+		std::cout << "L:";
+		printAST(node->left.get());
+	}
+
+	if (node->right)
+	{
+		std::cout << "R:";
+		printAST(node->right.get());
+	}
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -85,10 +142,10 @@ int main(int argc, char** argv)
 
 	std::string expression = buffer.str();
 
-	// Node* tree;
+
 	try
 	{
-		// expression = "a+6*7-b - 4 + 4 / 2";
+		
 		SymbolTable ST;
 		// ST.setVariable("a", 40);
 		// ST.setVariable("b", 3);
@@ -105,17 +162,17 @@ int main(int argc, char** argv)
 		std::vector<Token> tokens = tokenizer(v);
 		std::unique_ptr<Node> tree = parser(tokens, ST, pos);
 
-		for(auto& c:tokens)
-			printNode(c);
-		// VM vm;
-		// vm.compile(tree.get());
-		// vm.visualize();
+		// printAST(tree.get());
+		// for(auto& c:tokens)
+		// 	printNode(c);
+		VM vm;
+		vm.compile(tree.get());
+		vm.visualize();
 		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
-		// clear(tree);
 	}
 	catch(std::exception& e)
 	{
-		// clear(tree);
+
 		std::cout << e.what() << '\n';
 	}
 }
