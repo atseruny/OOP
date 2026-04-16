@@ -1,6 +1,6 @@
 NAME = Compiler
 CXX = c++
-CXXFLAGS = -Wall -Wextra 
+CXXFLAGS = -Wall -Wextra -std=c++17
 
 SRC = main.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp parser.cpp \
 		VM.cpp SymbolTable.cpp

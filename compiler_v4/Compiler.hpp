@@ -8,10 +8,20 @@ enum class OpCode : uint8_t
 	LOAD_NUM,
 	LOAD_VAR,
 	STORE_VAR,
+
 	ADD,
 	SUB,
 	MUL,
-	DIV
+	DIV,
+
+	JMP,
+	CMP,
+	JE,
+	JNE,
+	JG,
+	JL,
+	JGE,
+	JLE
 };
 
 struct Instruction

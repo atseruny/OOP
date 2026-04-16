@@ -29,23 +29,20 @@ public:
 
 		switch (token.type)
 		{
-		case NodeType::Num:
-			value = std::atoi(token.value.c_str());
-			break;
-
-		case NodeType::Var:
-			name = token.value;
-			break;
-
-		case NodeType::Op:
-			if (token.value == "+") op = Operator::Add;
-			else if (token.value == "-") op = Operator::Sub;
-			else if (token.value == "*") op = Operator::Mult;
-			else if (token.value == "/") op = Operator::Div;
-			break;
-
-		default:
-			break;
+			case NodeType::Num:
+				value = std::atoi(token.value.c_str());
+				break;
+			case NodeType::Var:
+				name = token.value;
+				break;
+			case NodeType::Op:
+				if (token.value == "+") op = Operator::Add;
+				else if (token.value == "-") op = Operator::Sub;
+				else if (token.value == "*") op = Operator::Mult;
+				else if (token.value == "/") op = Operator::Div;
+				break;
+			default:
+				break;
 		}
 	}
 	virtual ~Node() = default;

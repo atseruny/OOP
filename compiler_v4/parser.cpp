@@ -34,7 +34,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 			n->symAddr = ST.getAddress(n->name);
 			operands.push(std::move(n));
 		}
-		else if (t.type == NodeType::Op)
+		else if (t.type == NodeType::Op || t.type == NodeType::Comp)
 		{
 			while (!operators.empty() &&
 				operators.top()->type != NodeType::OpBr &&

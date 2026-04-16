@@ -4,7 +4,7 @@ VM::VM() : regs(100), next(0) { }
 
 VM::~VM() { }
 
-int VM::compileNum(const Node* node)
+int VM::compileNum(Node* node)
 {
 	int dest = next++;
 
@@ -21,7 +21,7 @@ int VM::compileNum(const Node* node)
 	return dest;
 }
 
-int VM::compileVar(const Node* node)
+int VM::compileVar(Node* node)
 {
 	int dest = next++;
 
@@ -35,7 +35,7 @@ int VM::compileVar(const Node* node)
 	return dest;
 }
 
-int VM::compileOp(const Node* node)
+int VM::compileOp(Node* node)
 {
 	int l = compile(node->left.get());
 	int r = compile(node->right.get());
@@ -63,13 +63,12 @@ int VM::compileOp(const Node* node)
 	return dest;
 }
 
-int VM::compileAssign(const Node* node)
+int VM::compileAssign(Node* node)
 {
 	size_t addr = node->left->symAddr;
 
 	int rhs = compile(node->right.get());
 
-	//std::cout<<"rhs: "<<rhs<<"\n";
 	program.push_back({
 		static_cast<uint8_t>(OpCode::STORE_VAR),
 		static_cast<uint8_t>(rhs),
@@ -80,20 +79,84 @@ int VM::compileAssign(const Node* node)
 	return rhs;
 }
 
-int VM::compileBlock(const Node* node)
+int VM::compileBlock(Node* node)
 {
-	//std::cout<<"From\n";
-
 	for (auto& stmt : static_cast<const BlockNode*>(node)->statements)
-	{
-		//std::cout<<"Here\n";
 		compile(stmt.get());
-	}
 
 	return -1;
 }
 
-int VM::compile(const Node* node)
+int VM::compileIf(Node* node)
+{
+	IfNode* n = dynamic_cast<IfNode*>(node);
+
+	int jmpIndex = compileComp(n->condition.get());
+
+	compile(n->trueBranch.get());
+
+	if (n->falseBranch)
+	{
+		int jmpEnd = program.size();
+		program.push_back({
+			static_cast<uint8_t>(OpCode::JMP),
+			0, 0, 0
+		});
+
+		program[jmpIndex].dest = program.size();
+
+		compile(n->falseBranch.get());
+
+		program[jmpEnd].dest = program.size();
+	}
+	else
+		program[jmpIndex].dest = program.size();
+
+	return -1;
+}
+
+int VM::compileComp(Node* node)
+{
+	int l = compile(node->left.get());
+	int r = compile(node->right.get());
+
+	program.push_back({
+		static_cast<uint8_t>(OpCode::CMP),
+		static_cast<uint8_t>(l),
+		static_cast<uint8_t>(r),
+		0
+	});
+
+	OpCode jmp;
+
+	if (node->name == "==")
+		jmp = OpCode::JE;
+	else if (node->name == "!=")
+		jmp = OpCode::JNE;
+	else if (node->name == ">=")
+		jmp = OpCode::JGE;
+	else if (node->name == "<=")
+		jmp = OpCode::JLE;
+	else if (node->name == ">")
+		jmp = OpCode::JG;
+	else if (node->name == "<")
+		jmp = OpCode::JL;
+	else
+		throw std::runtime_error("Unknown comparison");
+
+	int jmpIndex = program.size();
+
+	program.push_back({
+		static_cast<uint8_t>(jmp),
+		0,
+		0,
+		0
+	});
+
+	return jmpIndex;
+}
+
+int VM::compile(Node* node)
 {
 	if (!node)
 		return -1;
@@ -110,6 +173,10 @@ int VM::compile(const Node* node)
 			return compileAssign(node);
 		case NodeType::Block:
 			return compileBlock(node);
+		case NodeType::If:
+			return compileIf(node);
+		case NodeType::Comp:
+			return compileComp(node);
 		default:
 			throw std::runtime_error("Unknown node type in compile");
 	}
@@ -130,71 +197,96 @@ void VM::visualize() const
 		{
 			case OpCode::LOAD_NUM:
 				std::cout << "MOV r" << static_cast<int>(inst.dest)
-						  << ", " << constants[inst.left];
+						<< ", " << constants[inst.left];
 				break;
 			case OpCode::LOAD_VAR:
 				std::cout << "MOV r" << static_cast<int>(inst.dest)
-						  << ", [" << static_cast<int>(inst.left) << "]";
+						<< ", [" << static_cast<int>(inst.left) << "]";
 				break;
 			case OpCode::ADD:
 				std::cout << "ADD r" << static_cast<int>(inst.dest)
-						  << ", r" << static_cast<int>(inst.left)
-						  << ", r" << static_cast<int>(inst.right);
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
 				break;
 			case OpCode::SUB:
 				std::cout << "SUB r" << static_cast<int>(inst.dest)
-						  << ", r" << static_cast<int>(inst.left)
-						  << ", r" << static_cast<int>(inst.right);
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
 				break;
 			case OpCode::MUL:
 				std::cout << "MUL r" << static_cast<int>(inst.dest)
-						  << ", r" << static_cast<int>(inst.left)
-						  << ", r" << static_cast<int>(inst.right);
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
 				break;
 			case OpCode::DIV:
 				std::cout << "DIV r" << static_cast<int>(inst.dest)
-						  << ", r" << static_cast<int>(inst.left)
-						  << ", r" << static_cast<int>(inst.right);
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
 				break;
 			case OpCode::STORE_VAR:
 				std::cout << "MOV [" << static_cast<int>(inst.left)
-						  << "], r"  << static_cast<int>(inst.dest);
+						<< "], r"  << static_cast<int>(inst.dest);
+				break;
+			case OpCode::CMP:
+				std::cout << "CMP r" << (int)inst.dest
+						<< ", r" << (int)inst.left;
+				break;
+			case OpCode::JE:
+				std::cout << "JNE " << (int)inst.dest;
+				break;
+			case OpCode::JNE:
+				std::cout << "JE " << (int)inst.dest;
+				break;
+			case OpCode::JL:
+				std::cout << "JGE " << (int)inst.dest;
+				break;
+			case OpCode::JG:
+				std::cout << "JLE " << (int)inst.dest;
+				break;
+			case OpCode::JLE:
+				std::cout << "JG " << (int)inst.dest;
+				break;
+			case OpCode::JGE:
+				std::cout << "JL " << (int)inst.dest;
+				break;
+			case OpCode::JMP:
+				std::cout << "JMP " << static_cast<int>(inst.dest);
 				break;
 		}
 		std::cout << "\n";
 	}
 }
 
-int VM::execute(SymbolTable& ST)
-{
-	for (const auto& i : program)
-	{
-		switch (static_cast<OpCode>(i.op))
-		{
-			case OpCode::LOAD_NUM:
-				regs[i.dest] = constants[i.left];
-				break;
-			case OpCode::LOAD_VAR:
-				regs[i.dest] = ST.getValueByAddress(i.left);
-				break;
-			case OpCode::ADD:
-				regs[i.dest] = regs[i.left] + regs[i.right];
-				break;
-			case OpCode::SUB:
-				regs[i.dest] = regs[i.left] - regs[i.right];
-				break;
-			case OpCode::MUL:
-				regs[i.dest] = regs[i.left] * regs[i.right];
-				break;
-			case OpCode::DIV:
-				if (regs[i.right] == 0)
-					throw std::runtime_error("Division by zero");
-				regs[i.dest] = regs[i.left] / regs[i.right];
-				break;
-			case OpCode::STORE_VAR:
-				ST.setVariableByAddress(i.left, regs[i.dest]);
-				break;
-		}
-	}
-	return program.empty() ? 0 : regs[program.back().dest];
-}
+// int VM::execute(SymbolTable& ST)
+// {
+// 	for (const auto& i : program)
+// 	{
+// 		switch (static_cast<OpCode>(i.op))
+// 		{
+// 			case OpCode::LOAD_NUM:
+// 				regs[i.dest] = constants[i.left];
+// 				break;
+// 			case OpCode::LOAD_VAR:
+// 				regs[i.dest] = ST.getValueByAddress(i.left);
+// 				break;
+// 			case OpCode::ADD:
+// 				regs[i.dest] = regs[i.left] + regs[i.right];
+// 				break;
+// 			case OpCode::SUB:
+// 				regs[i.dest] = regs[i.left] - regs[i.right];
+// 				break;
+// 			case OpCode::MUL:
+// 				regs[i.dest] = regs[i.left] * regs[i.right];
+// 				break;
+// 			case OpCode::DIV:
+// 				if (regs[i.right] == 0)
+// 					throw std::runtime_error("Division by zero");
+// 				regs[i.dest] = regs[i.left] / regs[i.right];
+// 				break;
+// 			case OpCode::STORE_VAR:
+// 				ST.setVariableByAddress(i.left, regs[i.dest]);
+// 				break;
+// 		}
+// 	}
+// 	return program.empty() ? 0 : regs[program.back().dest];
+// }

@@ -12,17 +12,20 @@ private:
 	std::vector<Instruction> program;
 	std::vector<int> constants;
 
-	int compileNum(const Node* node);
-	int compileVar(const Node* node);
-	int compileOp(const Node* node);
-	int compileAssign(const Node* node);
-	int compileBlock(const Node* node);
+	int compileNum(Node* node);
+	int compileVar(Node* node);
+	int compileOp(Node* node);
+	int compileAssign(Node* node);
+	int compileBlock(Node* node);
+	int compileIf(Node* node);
+	int compileComp(Node* node);
+
 
 public:
 	VM();
 	~VM();
 	void visualize() const;
-	int compile(const Node* node);
+	int compile(Node* node);
 	int execute(SymbolTable& ST);
 
 };
