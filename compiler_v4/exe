@@ -1,8 +1,0 @@
-MOV r0, 10
-MOV [0], r0
-MOV r1, [0]
-MOV r2, 7
-ADD r3, r1, r2
-MOV [1], r3
-MOV r4, [1]
-MOV [2], r4

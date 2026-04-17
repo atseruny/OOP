@@ -383,46 +383,6 @@ void VM::parseLine(const std::string& line)
     std::string op;
     ss >> op;
 
-    if (op == "MOV")
-    {
-        std::string a, b;
-        ss >> a >> b;
-
-        if (a[0] == 'r')
-        {
-			std::cout<<"l: "<<line<<"\n";
-            int reg = std::stoi(a.substr(1));
-
-            if (b[0] == 'r')
-            {
-                int reg2 = std::stoi(b.substr(1));
-                program.push_back({static_cast<uint8_t>(OpCode::LOAD_VAR),
-					static_cast<uint8_t>(reg),
-					static_cast<uint8_t>(reg2), 0});
-            }
-            else
-            {
-                int val = std::stoi(b);
-                constants.push_back(val);
-                program.push_back({static_cast<uint8_t>(OpCode::LOAD_NUM),
-					static_cast<uint8_t>(reg),
-					static_cast<uint8_t>(constants.size()-1), 0});
-            }
-        }
-    }
-    else if (op == "ADD")
-    {
-        std::string d, a, b;
-        ss >> d >> a >> b;
-		std::cout << "d: "<<d<<" a: "<<a<<" b: "<<b<<"\n";
-
-        program.push_back({
-            static_cast<uint8_t>(OpCode::ADD),
-            static_cast<uint8_t>(regIndex(d)),
-            static_cast<uint8_t>(regIndex(a)),
-            static_cast<uint8_t>(regIndex(b))
-        });
-    }
 }
 
 // int VM::execute(SymbolTable& ST)
