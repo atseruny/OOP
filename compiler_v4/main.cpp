@@ -142,19 +142,10 @@ int main(int argc, char** argv)
 
 	std::string expression = buffer.str();
 
+	SymbolTable ST;
 
 	try
 	{
-		
-		SymbolTable ST;
-		// ST.setVariable("a", 40);
-		// ST.setVariable("b", 3);
-
-		// std::cout << "Enter variables: ";
-		// int value;
-		// while (std::cin >> value)
-		// variables.push_back(value);
-
 		std::stringstream line(expression);
 
 		int pos = 0;
@@ -168,7 +159,9 @@ int main(int argc, char** argv)
 		VM vm;
 		vm.compile(tree.get());
 		vm.visualize();
-		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
+		vm.writeInExe();
+
+		std::cout << "\nValue: " << vm.execute(ST) << "\n";
 	}
 	catch(std::exception& e)
 	{

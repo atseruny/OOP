@@ -11,6 +11,8 @@ private:
 	int next;
 	std::vector<Instruction> program;
 	std::vector<int> constants;
+	std::fstream exe;
+	int cmpFlag;
 
 	int compileNum(Node* node);
 	int compileVar(Node* node);
@@ -26,6 +28,7 @@ public:
 	~VM();
 	void visualize() const;
 	int compile(Node* node);
+	void writeInExe();
 	int execute(SymbolTable& ST);
 
 };

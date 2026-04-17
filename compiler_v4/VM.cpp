@@ -1,6 +1,6 @@
 #include "VM.hpp"
 
-VM::VM() : regs(100), next(0) { }
+VM::VM() : regs(100), next(0), cmpFlag(0) { }
 
 VM::~VM() { }
 
@@ -282,36 +282,168 @@ void VM::visualize() const
 	}
 }
 
-// int VM::execute(SymbolTable& ST)
-// {
-// 	for (const auto& i : program)
-// 	{
-// 		switch (static_cast<OpCode>(i.op))
-// 		{
-// 			case OpCode::LOAD_NUM:
-// 				regs[i.dest] = constants[i.left];
-// 				break;
-// 			case OpCode::LOAD_VAR:
-// 				regs[i.dest] = ST.getValueByAddress(i.left);
-// 				break;
-// 			case OpCode::ADD:
-// 				regs[i.dest] = regs[i.left] + regs[i.right];
-// 				break;
-// 			case OpCode::SUB:
-// 				regs[i.dest] = regs[i.left] - regs[i.right];
-// 				break;
-// 			case OpCode::MUL:
-// 				regs[i.dest] = regs[i.left] * regs[i.right];
-// 				break;
-// 			case OpCode::DIV:
-// 				if (regs[i.right] == 0)
-// 					throw std::runtime_error("Division by zero");
-// 				regs[i.dest] = regs[i.left] / regs[i.right];
-// 				break;
-// 			case OpCode::STORE_VAR:
-// 				ST.setVariableByAddress(i.left, regs[i.dest]);
-// 				break;
-// 		}
-// 	}
-// 	return program.empty() ? 0 : regs[program.back().dest];
-// }
+
+void VM::writeInExe()
+{
+	exe.open("exe", std::ios::out | std::ios::trunc);
+	if (!exe.is_open())
+		throw std::runtime_error("Could not open file");
+	for (size_t i = 0; i < program.size(); i++)
+	{
+		const auto& inst = program[i];
+
+		switch (static_cast<OpCode>(inst.op))
+		{
+			case OpCode::LOAD_NUM:
+				exe << "MOV r" << static_cast<int>(inst.dest)
+						<< ", " << constants[inst.left];
+				break;
+			case OpCode::LOAD_VAR:
+				exe << "MOV r" << static_cast<int>(inst.dest)
+						<< ", [" << static_cast<int>(inst.left) << "]";
+				break;
+			case OpCode::ADD:
+				exe << "ADD r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::SUB:
+				exe << "SUB r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::MUL:
+				exe << "MUL r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::DIV:
+				exe << "DIV r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left)
+						<< ", r" << static_cast<int>(inst.right);
+				break;
+			case OpCode::STORE_VAR:
+				exe << "MOV [" << static_cast<int>(inst.left)
+						<< "], r"  << static_cast<int>(inst.dest);
+				break;
+			case OpCode::CMP:
+				exe << "CMP r" << (int)inst.dest
+						<< ", r" << (int)inst.left;
+				break;
+			case OpCode::JE:
+				exe << "JNE " << (int)inst.dest;
+				break;
+			case OpCode::JNE:
+				exe << "JE " << (int)inst.dest;
+				break;
+			case OpCode::JL:
+				exe << "JGE " << (int)inst.dest;
+				break;
+			case OpCode::JG:
+				exe << "JLE " << (int)inst.dest;
+				break;
+			case OpCode::JLE:
+				exe << "JG " << (int)inst.dest;
+				break;
+			case OpCode::JGE:
+				exe << "JL " << (int)inst.dest;
+				break;
+			case OpCode::JMP:
+				exe << "JMP " << static_cast<int>(inst.dest);
+				break;
+		}
+		exe << "\n";
+	}
+
+	exe.close();
+}
+
+int VM::execute(SymbolTable& ST)
+{
+    int ip = 0;
+
+    while (ip < program.size())
+    {
+        const auto& i = program[ip];
+
+        switch (static_cast<OpCode>(i.op))
+        {
+            case OpCode::LOAD_NUM:
+                regs[i.dest] = constants[i.left];
+                break;
+            case OpCode::LOAD_VAR:
+                regs[i.dest] = ST.getValueByAddress(i.left);
+                break;
+            case OpCode::ADD:
+                regs[i.dest] = regs[i.left] + regs[i.right];
+                break;
+            case OpCode::SUB:
+                regs[i.dest] = regs[i.left] - regs[i.right];
+                break;
+            case OpCode::MUL:
+                regs[i.dest] = regs[i.left] * regs[i.right];
+                break;
+            case OpCode::DIV:
+                if (regs[i.right] == 0)
+                    throw std::runtime_error("Division by zero");
+                regs[i.dest] = regs[i.left] / regs[i.right];
+                break;
+            case OpCode::STORE_VAR:
+                ST.setVariableByAddress(i.left, regs[i.dest]);
+                break;
+            case OpCode::CMP:
+                // store result of comparison
+                // simplest: store difference
+                cmpFlag = regs[i.dest] - regs[i.left];
+                break;
+            case OpCode::JE:
+                if (cmpFlag == 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JNE:
+                if (cmpFlag != 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JL:
+                if (cmpFlag < 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JG:
+                if (cmpFlag > 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JLE:
+                if (cmpFlag <= 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JGE:
+                if (cmpFlag >= 0)
+                {
+                    ip = i.dest;
+                    continue;
+                }
+                break;
+            case OpCode::JMP:
+                ip = i.dest;
+                continue;
+        }
+        ip++; // move to next instruction
+    }
+
+    return program.empty() ? 0 : regs[program.back().dest];
+}
