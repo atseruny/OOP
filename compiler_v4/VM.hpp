@@ -5,6 +5,13 @@
 
 struct Instruction;
 
+enum class Operand
+{
+	MEM,
+	REG,
+	CONST,
+};
+
 class VM
 {
 private:
@@ -25,7 +32,7 @@ private:
 
 	void parseLine(const std::string& line);
 	int regIndex(const std::string& r);
-
+	Operand defType(const std::string& var) const;
 
 public:
 	VM();

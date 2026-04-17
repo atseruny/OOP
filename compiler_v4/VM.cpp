@@ -374,7 +374,16 @@ void VM::loadFile(const std::string& filename)
 
 int VM::regIndex(const std::string& r)
 {
-	return std::stoi(r);//.substr(1));
+	return std::stoi(r);
+}
+
+Operand VM::defType(const std::string& var) const
+{
+	if (var[0] == 'r')
+		return Operand::REG;
+	if (var[0] == '[' && (var.back() == ']' || (var[var.size() - 2] == ']' && var.back() == ',')))
+		return Operand::MEM;
+	return Operand::CONST;
 }
 
 void VM::parseLine(const std::string& line)
@@ -383,6 +392,24 @@ void VM::parseLine(const std::string& line)
     std::string op;
     ss >> op;
 
+	if (op == "MOV")
+	{
+		std::string dst;
+		std::string src;
+		ss >> dst >> src;
+		switch (defType(dst))
+		{
+			case Operand::REG:
+				std::cout << dst<<" is reg\n";
+				break;
+			case Operand::MEM:
+				std::cout << dst<<" is mem\n";
+				break;
+			case Operand::CONST:
+				std::cout << dst<<" is const\n";
+				break;
+		}
+	}
 }
 
 // int VM::execute(SymbolTable& ST)
