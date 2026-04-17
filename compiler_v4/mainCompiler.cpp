@@ -1,4 +1,4 @@
-#include "Expr.hpp"
+#include "Compiler.hpp"
 
 void printNode(const Token& node)
 {
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 		vm.visualize();
 		vm.writeInExe();
 
-		std::cout << "\nValue: " << vm.execute(ST) << "\n";
+		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
 	}
 	catch(std::exception& e)
 	{

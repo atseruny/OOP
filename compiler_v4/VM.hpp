@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Expr.hpp"
 #include "Compiler.hpp"
 #include "SymbolTable.hpp"
+
+struct Instruction;
 
 class VM
 {
@@ -11,7 +12,6 @@ private:
 	int next;
 	std::vector<Instruction> program;
 	std::vector<int> constants;
-	std::fstream exe;
 	int cmpFlag;
 
 	int compileNum(Node* node);
@@ -23,12 +23,17 @@ private:
 	int compileComp(Node* node);
 	int compileWhile(Node* node);
 
+	void parseLine(const std::string& line);
+	int regIndex(const std::string& r);
+
+
 public:
 	VM();
 	~VM();
 	void visualize() const;
 	int compile(Node* node);
 	void writeInExe();
+	void loadFile(const std::string& name);
 	int execute(SymbolTable& ST);
 
 };

@@ -253,26 +253,26 @@ void VM::visualize() const
 						<< "], r"  << static_cast<int>(inst.dest);
 				break;
 			case OpCode::CMP:
-				std::cout << "CMP r" << (int)inst.dest
-						<< ", r" << (int)inst.left;
+				std::cout << "CMP r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left);
 				break;
 			case OpCode::JE:
-				std::cout << "JNE " << (int)inst.dest;
+				std::cout << "JNE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JNE:
-				std::cout << "JE " << (int)inst.dest;
+				std::cout << "JE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JL:
-				std::cout << "JGE " << (int)inst.dest;
+				std::cout << "JGE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JG:
-				std::cout << "JLE " << (int)inst.dest;
+				std::cout << "JLE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JLE:
-				std::cout << "JG " << (int)inst.dest;
+				std::cout << "JG " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JGE:
-				std::cout << "JL " << (int)inst.dest;
+				std::cout << "JL " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JMP:
 				std::cout << "JMP " << static_cast<int>(inst.dest);
@@ -282,10 +282,10 @@ void VM::visualize() const
 	}
 }
 
-
 void VM::writeInExe()
 {
-	exe.open("exe", std::ios::out | std::ios::trunc);
+	std::fstream exe;
+	exe.open("./exe", std::ios::out | std::ios::trunc);
 	if (!exe.is_open())
 		throw std::runtime_error("Could not open file");
 	for (size_t i = 0; i < program.size(); i++)
@@ -327,26 +327,26 @@ void VM::writeInExe()
 						<< "], r"  << static_cast<int>(inst.dest);
 				break;
 			case OpCode::CMP:
-				exe << "CMP r" << (int)inst.dest
-						<< ", r" << (int)inst.left;
+				exe << "CMP r" << static_cast<int>(inst.dest)
+						<< ", r" << static_cast<int>(inst.left);
 				break;
 			case OpCode::JE:
-				exe << "JNE " << (int)inst.dest;
+				exe << "JNE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JNE:
-				exe << "JE " << (int)inst.dest;
+				exe << "JE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JL:
-				exe << "JGE " << (int)inst.dest;
+				exe << "JGE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JG:
-				exe << "JLE " << (int)inst.dest;
+				exe << "JLE " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JLE:
-				exe << "JG " << (int)inst.dest;
+				exe << "JG " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JGE:
-				exe << "JL " << (int)inst.dest;
+				exe << "JL " << static_cast<int>(inst.dest);
 				break;
 			case OpCode::JMP:
 				exe << "JMP " << static_cast<int>(inst.dest);
@@ -358,92 +358,159 @@ void VM::writeInExe()
 	exe.close();
 }
 
-int VM::execute(SymbolTable& ST)
+void VM::loadFile(const std::string& filename)
 {
-    int ip = 0;
+	std::ifstream file(filename);
+	if (!file.is_open())
+		throw std::runtime_error("Cannot open file");
 
-    while (ip < program.size())
-    {
-        const auto& i = program[ip];
-
-        switch (static_cast<OpCode>(i.op))
-        {
-            case OpCode::LOAD_NUM:
-                regs[i.dest] = constants[i.left];
-                break;
-            case OpCode::LOAD_VAR:
-                regs[i.dest] = ST.getValueByAddress(i.left);
-                break;
-            case OpCode::ADD:
-                regs[i.dest] = regs[i.left] + regs[i.right];
-                break;
-            case OpCode::SUB:
-                regs[i.dest] = regs[i.left] - regs[i.right];
-                break;
-            case OpCode::MUL:
-                regs[i.dest] = regs[i.left] * regs[i.right];
-                break;
-            case OpCode::DIV:
-                if (regs[i.right] == 0)
-                    throw std::runtime_error("Division by zero");
-                regs[i.dest] = regs[i.left] / regs[i.right];
-                break;
-            case OpCode::STORE_VAR:
-                ST.setVariableByAddress(i.left, regs[i.dest]);
-                break;
-            case OpCode::CMP:
-                // store result of comparison
-                // simplest: store difference
-                cmpFlag = regs[i.dest] - regs[i.left];
-                break;
-            case OpCode::JE:
-                if (cmpFlag == 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JNE:
-                if (cmpFlag != 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JL:
-                if (cmpFlag < 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JG:
-                if (cmpFlag > 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JLE:
-                if (cmpFlag <= 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JGE:
-                if (cmpFlag >= 0)
-                {
-                    ip = i.dest;
-                    continue;
-                }
-                break;
-            case OpCode::JMP:
-                ip = i.dest;
-                continue;
-        }
-        ip++; // move to next instruction
-    }
-
-    return program.empty() ? 0 : regs[program.back().dest];
+	std::string line;
+	while (std::getline(file, line))
+	{
+		parseLine(line);
+	}
+	file.close();
 }
+
+int VM::regIndex(const std::string& r)
+{
+	return std::stoi(r);//.substr(1));
+}
+
+void VM::parseLine(const std::string& line)
+{
+    std::istringstream ss(line);
+    std::string op;
+    ss >> op;
+
+    if (op == "MOV")
+    {
+        std::string a, b;
+        ss >> a >> b;
+
+        if (a[0] == 'r')
+        {
+			std::cout<<"l: "<<line<<"\n";
+            int reg = std::stoi(a.substr(1));
+
+            if (b[0] == 'r')
+            {
+                int reg2 = std::stoi(b.substr(1));
+                program.push_back({static_cast<uint8_t>(OpCode::LOAD_VAR),
+					static_cast<uint8_t>(reg),
+					static_cast<uint8_t>(reg2), 0});
+            }
+            else
+            {
+                int val = std::stoi(b);
+                constants.push_back(val);
+                program.push_back({static_cast<uint8_t>(OpCode::LOAD_NUM),
+					static_cast<uint8_t>(reg),
+					static_cast<uint8_t>(constants.size()-1), 0});
+            }
+        }
+    }
+    else if (op == "ADD")
+    {
+        std::string d, a, b;
+        ss >> d >> a >> b;
+		std::cout << "d: "<<d<<" a: "<<a<<" b: "<<b<<"\n";
+
+        program.push_back({
+            static_cast<uint8_t>(OpCode::ADD),
+            static_cast<uint8_t>(regIndex(d)),
+            static_cast<uint8_t>(regIndex(a)),
+            static_cast<uint8_t>(regIndex(b))
+        });
+    }
+}
+
+// int VM::execute(SymbolTable& ST)
+// {
+//     int ip = 0;
+
+//     while (ip < program.size())
+//     {
+//         const auto& i = program[ip];
+
+//         switch (static_cast<OpCode>(i.op))
+//         {
+//             case OpCode::LOAD_NUM:
+//                 regs[i.dest] = constants[i.left];
+//                 break;
+//             case OpCode::LOAD_VAR:
+//                 regs[i.dest] = ST.getValueByAddress(i.left);
+//                 break;
+//             case OpCode::ADD:
+//                 regs[i.dest] = regs[i.left] + regs[i.right];
+//                 break;
+//             case OpCode::SUB:
+//                 regs[i.dest] = regs[i.left] - regs[i.right];
+//                 break;
+//             case OpCode::MUL:
+//                 regs[i.dest] = regs[i.left] * regs[i.right];
+//                 break;
+//             case OpCode::DIV:
+//                 if (regs[i.right] == 0)
+//                     throw std::runtime_error("Division by zero");
+//                 regs[i.dest] = regs[i.left] / regs[i.right];
+//                 break;
+//             case OpCode::STORE_VAR:
+//                 ST.setVariableByAddress(i.left, regs[i.dest]);
+//                 break;
+//             case OpCode::CMP:
+//                 // store result of comparison
+//                 // simplest: store difference
+//                 cmpFlag = regs[i.dest] - regs[i.left];
+//                 break;
+//             case OpCode::JE:
+//                 if (cmpFlag == 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JNE:
+//                 if (cmpFlag != 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JL:
+//                 if (cmpFlag < 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JG:
+//                 if (cmpFlag > 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JLE:
+//                 if (cmpFlag <= 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JGE:
+//                 if (cmpFlag >= 0)
+//                 {
+//                     ip = i.dest;
+//                     continue;
+//                 }
+//                 break;
+//             case OpCode::JMP:
+//                 ip = i.dest;
+//                 continue;
+//         }
+//         ip++; // move to next instruction
+//     }
+
+//     return program.empty() ? 0 : regs[program.back().dest];
+// }

@@ -1,25 +1,32 @@
-NAME = Compiler
+NAME1 = Compiler
+NAME2 = VirtualMachine
+
 CXX = c++
 CXXFLAGS = -Wall -Wextra -std=c++17
 
-SRC = main.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp parser.cpp \
-		VM.cpp SymbolTable.cpp
-OBJ = $(SRC:.cpp=.o)
+COMPILER_SRC = mainCompiler.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp parser.cpp VM.cpp SymbolTable.cpp
+COMPILER_OBJ = $(COMPILER_SRC:.cpp=.o)
 
-all: $(NAME)
+VM_SRC = mainVM.cpp VM.cpp SymbolTable.cpp
+VM_OBJ = $(VM_SRC:.cpp=.o)
 
-$(NAME): $(OBJ)
-		$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
+all: $(NAME1) $(NAME2)
+
+$(NAME1): $(COMPILER_OBJ)
+	$(CXX) $(CXXFLAGS) $(COMPILER_OBJ) -o $(NAME1)
+
+$(NAME2): $(VM_OBJ)
+	$(CXX) $(CXXFLAGS) $(VM_OBJ) -o $(NAME2)
 
 %.o: %.cpp
-		$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(COMPILER_OBJ) $(VM_OBJ)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME1) $(NAME2)
 
-re: clean all
+re: fclean all
 
-.PHONY:	all clean fclean re
+.PHONY: all clean fclean re
