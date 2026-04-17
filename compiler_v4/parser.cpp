@@ -166,10 +166,14 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& 
 	auto node = std::make_unique<IfNode>();
 	node->condition = parseExpression(cond, ST);
 	
-	if (tokens[pos].type != NodeType::OpBody)
-		throw std::runtime_error("Expected {");
+	if (tokens[pos].type == NodeType::OpBody)
+		node->trueBranch = parseBlock(tokens, ST, pos);
+	else
+		node->trueBranch = parseStatement(tokens, ST, pos);
+	// if (tokens[pos].type != NodeType::OpBody)
+	// 	throw std::runtime_error("Expected {");
 	
-	node->trueBranch = parseBlock(tokens, ST, pos);
+	// node->trueBranch = parseBlock(tokens, ST, pos);
 	
 	if (tokens[pos].type == NodeType::Else)
 	{
@@ -179,7 +183,7 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& 
 		else if (tokens[pos].type == NodeType::OpBody)
 			node->falseBranch = parseBlock(tokens, ST, pos);
 		else
-			throw std::runtime_error("Expected if or { after else");
+			node->falseBranch = parseStatement(tokens, ST, pos);
 	}
 	return node;
 }

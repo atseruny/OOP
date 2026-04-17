@@ -13,6 +13,7 @@
 std::vector<std::string> lexer(std::stringstream& line);
 std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
+std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 
 
 inline State FSM[3][6] =

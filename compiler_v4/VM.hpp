@@ -19,7 +19,7 @@ private:
 	int compileBlock(Node* node);
 	int compileIf(Node* node);
 	int compileComp(Node* node);
-
+	int compileWhile(Node* node);
 
 public:
 	VM();

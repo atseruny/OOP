@@ -100,7 +100,9 @@ int VM::compileIf(Node* node)
 		int jmpEnd = program.size();
 		program.push_back({
 			static_cast<uint8_t>(OpCode::JMP),
-			0, 0, 0
+			0,
+			0,
+			0
 		});
 
 		program[jmpIndex].dest = program.size();
@@ -113,6 +115,27 @@ int VM::compileIf(Node* node)
 		program[jmpIndex].dest = program.size();
 
 	return -1;
+}
+
+int VM::compileWhile(Node* node)
+{
+	WhileNode* n = dynamic_cast<WhileNode*>(node);
+
+	int loopStart = program.size();
+
+	int jmpExit = compileComp(n->condition.get());
+
+	compile(n->body.get());
+
+	program.push_back({
+			static_cast<uint8_t>(OpCode::JMP),
+			static_cast<uint8_t>(loopStart),
+			0,
+			0
+		});
+	
+	program[jmpExit].dest = program.size();
+	return - 1;
 }
 
 int VM::compileComp(Node* node)
@@ -177,6 +200,8 @@ int VM::compile(Node* node)
 			return compileIf(node);
 		case NodeType::Comp:
 			return compileComp(node);
+		case NodeType::While:
+			return compileWhile(node);
 		default:
 			throw std::runtime_error("Unknown node type in compile");
 	}
