@@ -222,7 +222,7 @@ void VM::visualize() const
 		{
 			case OpCode::LOAD_NUM:
 				std::cout << "MOV r" << static_cast<int>(inst.dest)
-						<< ", " << constants[inst.left];
+						<< ", #" << constants[inst.left];
 				break;
 			case OpCode::LOAD_VAR:
 				std::cout << "MOV r" << static_cast<int>(inst.dest)
@@ -296,7 +296,7 @@ void VM::writeInExe()
 		{
 			case OpCode::LOAD_NUM:
 				exe << "MOV r" << static_cast<int>(inst.dest)
-						<< ", " << constants[inst.left];
+						<< ", #" << constants[inst.left];
 				break;
 			case OpCode::LOAD_VAR:
 				exe << "MOV r" << static_cast<int>(inst.dest)

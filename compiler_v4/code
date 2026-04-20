@@ -1,7 +1,7 @@
 int a;
 a = 10;
 {
-	int b = a + 7;
+	int b = (a + 7)*2;
 
 	int c = b;
 }
