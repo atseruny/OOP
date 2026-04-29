@@ -36,8 +36,10 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 	{
 		if (words[i].empty())
 			continue;
-		else if (words[i] == "int")
-			tokens.push_back(Token(words[i], NodeType::Decl));
+		else if (words[i] == "int" || words[i] == "void")
+			tokens.push_back(Token(words[i], NodeType::Type));
+		else if (words[i] == "return")
+			tokens.push_back(Token(words[i], NodeType::Ret));
 		else if (words[i] == "if")
 			tokens.push_back(Token(words[i], NodeType::If));
 		else if (words[i] == "else")

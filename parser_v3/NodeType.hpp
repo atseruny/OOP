@@ -25,7 +25,7 @@ enum class NodeType
 	Semi,		// ;
 	OpBody,		// {
 	ClBody,		// }
-	Decl,		// int
+	Type,		// int, void
 	Block,		// {}
-
+	Ret,		// return
 };

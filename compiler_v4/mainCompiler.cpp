@@ -46,8 +46,11 @@ void printNode(const Token& node)
 		case NodeType::ClBody:
 			std::cout << "Type: Close Curly Bracket, Symbol: " << node.value << "\n";
 			break;
-		case NodeType::Decl:
-			std::cout << "Type: Declaration, Symbol: " << node.value << "\n";
+		case NodeType::Type:
+			std::cout << "Type: Type, Symbol: " << node.value << "\n";
+			break;
+		case NodeType::Ret:
+			std::cout << "Type: Return, Symbol: " << node.value << "\n";
 			break;
 		default:
 			std::cout << "Type: Unknown\n";
@@ -151,15 +154,15 @@ int main(int argc, char** argv)
 		int pos = 0;
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		std::unique_ptr<Node> tree = parser(tokens, ST, pos);
+		// std::unique_ptr<Node> tree = parser(tokens, ST, pos);
 
+		for(auto& c:tokens)
+			printNode(c);
 		// printAST(tree.get());
-		// for(auto& c:tokens)
-		// 	printNode(c);
-		VM vm;
-		vm.compile(tree.get());
-		vm.visualize();
-		vm.writeInExe();
+		// VM vm;
+		// vm.compile(tree.get());
+		// vm.visualize();
+		// vm.writeInExe();
 
 		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
 	}
