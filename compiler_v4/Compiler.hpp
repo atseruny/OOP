@@ -11,9 +11,10 @@
 #include "../parser_v3/Token.hpp"
 #include "../parser_v3/State.hpp"
 #include <iomanip>
+#include "FuncNode.hpp"
 
 std::vector<std::string> lexer(std::stringstream& line);
-std::unique_ptr<Node> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
+std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
 

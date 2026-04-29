@@ -28,4 +28,5 @@ enum class NodeType
 	Type,		// int, void
 	Block,		// {}
 	Ret,		// return
+	Func,
 };

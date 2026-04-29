@@ -40,6 +40,8 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			tokens.push_back(Token(words[i], NodeType::Type));
 		else if (words[i] == "return")
 			tokens.push_back(Token(words[i], NodeType::Ret));
+		else if (words[i] == "Func")
+			tokens.push_back(Token(words[i], NodeType::Func));
 		else if (words[i] == "if")
 			tokens.push_back(Token(words[i], NodeType::If));
 		else if (words[i] == "else")

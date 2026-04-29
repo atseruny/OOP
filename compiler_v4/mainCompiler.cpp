@@ -106,6 +106,25 @@ void printAST(Node* node)
 			}
 			return;
 		}
+		case NodeType::Func:
+		{
+			FuncNode* n = dynamic_cast<FuncNode*>(node);
+
+			std::cout<<"Func: "<<n->name<<" with params\n";
+			for (size_t i = 0; i < n->params.size(); i++)
+			{
+				std::cout<<n->params[i].type<<"  "<<n->params[i].name<<"\n";
+			}
+			printAST(n->body.get());
+			break;
+		}
+		case NodeType::Ret:
+		{
+			ReturnNode* n = dynamic_cast<ReturnNode*>(node);
+			std::cout << "Return\n";
+			printAST(n->expr.get());
+			break;
+		}
 		default:
 			std::cout << "NodeType(" << (int)node->type << ")\n";
 			break;
@@ -154,11 +173,12 @@ int main(int argc, char** argv)
 		int pos = 0;
 		std::vector<std::string> v = lexer(line);
 		std::vector<Token> tokens = tokenizer(v);
-		// std::unique_ptr<Node> tree = parser(tokens, ST, pos);
+		std::vector<std::unique_ptr<Node>> trees = parser(tokens, ST, pos);
 
-		for(auto& c:tokens)
-			printNode(c);
-		// printAST(tree.get());
+		// for(auto& c:tokens)
+		// 	printNode(c);
+		for(auto& c:trees)
+			printAST(c.get());
 		// VM vm;
 		// vm.compile(tree.get());
 		// vm.visualize();
