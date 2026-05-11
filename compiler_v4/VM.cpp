@@ -179,6 +179,55 @@ int VM::compileComp(Node* node)
 	return jmpIndex;
 }
 
+// void VM::compileFunction(FuncNode* fn)
+// {
+// 	int addr = program.size();
+
+// 	functions[fn->name] = addr;
+// 	// labels[addr] = fn->name;
+
+// 	next = 0;
+
+// 	compile(fn->body.get());
+
+// 	if (program.empty() ||
+// 		static_cast<OpCode>(program.back().op) != OpCode::RET)
+// 	{
+// 		program.push_back({
+// 			static_cast<uint8_t>(OpCode::RET),
+// 			255,0,0
+// 		});
+// 	}
+// }
+
+
+
+int VM::compileReturn(Node* node)
+{
+	ReturnNode* ret = static_cast<ReturnNode*>(node);
+
+	if (ret->expr)
+	{
+		int reg = compile(ret->expr.get());
+
+		program.push_back({
+			static_cast<uint8_t>(OpCode::RET),
+			static_cast<uint8_t>(reg),
+			0,
+			0
+		});
+
+		return reg;
+	}
+
+	program.push_back({
+		static_cast<uint8_t>(OpCode::RET),
+		0,0,0
+	});
+
+	return -1;
+}
+
 int VM::compile(Node* node)
 {
 	if (!node)
@@ -202,85 +251,92 @@ int VM::compile(Node* node)
 			return compileComp(node);
 		case NodeType::While:
 			return compileWhile(node);
+		case NodeType::Ret:
+			return compileReturn(node);
+		// case NodeType::Func:{
+		// 	compileFunction(static_cast<FuncNode*>(node));
+		// 	return -1;
+		// }
 		default:
 			throw std::runtime_error("Unknown node type in compile");
 	}
 }
 
-void VM::visualize() const
-{
-	std::cout << "\n[VM Assembly]\n";
-	std::cout << "----------------------\n";
 
-	for (size_t i = 0; i < program.size(); i++)
-	{
-		const auto& inst = program[i];
+// void VM::visualize() const
+// {
+// 	std::cout << "\n[VM Assembly]\n";
+// 	std::cout << "----------------------\n";
 
-		std::cout << std::setw(3) << i << ": ";
+// 	for (size_t i = 0; i < program.size(); i++)
+// 	{
+// 		const auto& inst = program[i];
 
-		switch (static_cast<OpCode>(inst.op))
-		{
-			case OpCode::LOAD_NUM:
-				std::cout << "MOV r" << static_cast<int>(inst.dest)
-						<< ", #" << constants[inst.left];
-				break;
-			case OpCode::LOAD_VAR:
-				std::cout << "MOV r" << static_cast<int>(inst.dest)
-						<< ", [" << static_cast<int>(inst.left) << "]";
-				break;
-			case OpCode::ADD:
-				std::cout << "ADD r" << static_cast<int>(inst.dest)
-						<< ", r" << static_cast<int>(inst.left)
-						<< ", r" << static_cast<int>(inst.right);
-				break;
-			case OpCode::SUB:
-				std::cout << "SUB r" << static_cast<int>(inst.dest)
-						<< ", r" << static_cast<int>(inst.left)
-						<< ", r" << static_cast<int>(inst.right);
-				break;
-			case OpCode::MUL:
-				std::cout << "MUL r" << static_cast<int>(inst.dest)
-						<< ", r" << static_cast<int>(inst.left)
-						<< ", r" << static_cast<int>(inst.right);
-				break;
-			case OpCode::DIV:
-				std::cout << "DIV r" << static_cast<int>(inst.dest)
-						<< ", r" << static_cast<int>(inst.left)
-						<< ", r" << static_cast<int>(inst.right);
-				break;
-			case OpCode::STORE_VAR:
-				std::cout << "MOV [" << static_cast<int>(inst.left)
-						<< "], r"  << static_cast<int>(inst.dest);
-				break;
-			case OpCode::CMP:
-				std::cout << "CMP r" << static_cast<int>(inst.dest)
-						<< ", r" << static_cast<int>(inst.left);
-				break;
-			case OpCode::JE:
-				std::cout << "JNE " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JNE:
-				std::cout << "JE " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JL:
-				std::cout << "JGE " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JG:
-				std::cout << "JLE " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JLE:
-				std::cout << "JG " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JGE:
-				std::cout << "JL " << static_cast<int>(inst.dest);
-				break;
-			case OpCode::JMP:
-				std::cout << "JMP " << static_cast<int>(inst.dest);
-				break;
-		}
-		std::cout << "\n";
-	}
-}
+// 		std::cout << std::setw(3) << i << ": ";
+
+// 		switch (static_cast<OpCode>(inst.op))
+// 		{
+// 			case OpCode::LOAD_NUM:
+// 				std::cout << "MOV r" << static_cast<int>(inst.dest)
+// 						<< ", #" << constants[inst.left];
+// 				break;
+// 			case OpCode::LOAD_VAR:
+// 				std::cout << "MOV r" << static_cast<int>(inst.dest)
+// 						<< ", [" << static_cast<int>(inst.left) << "]";
+// 				break;
+// 			case OpCode::ADD:
+// 				std::cout << "ADD r" << static_cast<int>(inst.dest)
+// 						<< ", r" << static_cast<int>(inst.left)
+// 						<< ", r" << static_cast<int>(inst.right);
+// 				break;
+// 			case OpCode::SUB:
+// 				std::cout << "SUB r" << static_cast<int>(inst.dest)
+// 						<< ", r" << static_cast<int>(inst.left)
+// 						<< ", r" << static_cast<int>(inst.right);
+// 				break;
+// 			case OpCode::MUL:
+// 				std::cout << "MUL r" << static_cast<int>(inst.dest)
+// 						<< ", r" << static_cast<int>(inst.left)
+// 						<< ", r" << static_cast<int>(inst.right);
+// 				break;
+// 			case OpCode::DIV:
+// 				std::cout << "DIV r" << static_cast<int>(inst.dest)
+// 						<< ", r" << static_cast<int>(inst.left)
+// 						<< ", r" << static_cast<int>(inst.right);
+// 				break;
+// 			case OpCode::STORE_VAR:
+// 				std::cout << "MOV [" << static_cast<int>(inst.left)
+// 						<< "], r"  << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::CMP:
+// 				std::cout << "CMP r" << static_cast<int>(inst.dest)
+// 						<< ", r" << static_cast<int>(inst.left);
+// 				break;
+// 			case OpCode::JE:
+// 				std::cout << "JNE " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JNE:
+// 				std::cout << "JE " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JL:
+// 				std::cout << "JGE " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JG:
+// 				std::cout << "JLE " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JLE:
+// 				std::cout << "JG " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JGE:
+// 				std::cout << "JL " << static_cast<int>(inst.dest);
+// 				break;
+// 			case OpCode::JMP:
+// 				std::cout << "JMP " << static_cast<int>(inst.dest);
+// 				break;
+// 		}
+// 		std::cout << "\n";
+// 	}
+// }
 
 void VM::writeInExe()
 {
@@ -350,6 +406,9 @@ void VM::writeInExe()
 				break;
 			case OpCode::JMP:
 				exe << "JMP " << static_cast<int>(inst.dest);
+				break;
+			case OpCode::RET:
+				exe << "RET";
 				break;
 		}
 		exe << "\n";

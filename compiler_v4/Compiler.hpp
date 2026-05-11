@@ -13,6 +13,7 @@
 #include <iomanip>
 #include "FuncNode.hpp"
 #include <unordered_set>
+#include "CallNode.hpp"
 
 std::vector<std::string> lexer(std::stringstream& line);
 std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);

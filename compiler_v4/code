@@ -14,6 +14,7 @@ Func int Doo(int a)
 
 	int b = (a + 7)*2;
 
+	foo(a,2);
 	int c = b;
 	return c;
 }

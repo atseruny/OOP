@@ -125,6 +125,16 @@ void printAST(Node* node)
 			printAST(n->expr.get());
 			break;
 		}
+		case NodeType::Call:
+		{
+			CallNode* n = dynamic_cast<CallNode*>(node);
+			std::cout << "Call " << n->name << " with params\n";
+			for (size_t i = 0; i < n->args.size(); i++)
+			{
+				std::cout<<n->args[i].get()->name<<"\n";
+			}
+			break;
+		}
 		default:
 			std::cout << "NodeType(" << (int)node->type << ")\n";
 			break;
@@ -181,16 +191,15 @@ int main(int argc, char** argv)
 		for(auto& c:trees){
 			printAST(c.get());
 			std::cout <<"\nNEXT FUNC\n";
-			vm.compile(c.get());
+			// vm.compile(c.get());
+			// vm.writeInExe();
 		}
 		// vm.visualize();
-		// vm.writeInExe();
 
 		// std::cout << "\nValue: " << vm.execute(ST) << "\n";
 	}
 	catch(std::exception& e)
 	{
-
 		std::cout << e.what() << '\n';
 	}
 }

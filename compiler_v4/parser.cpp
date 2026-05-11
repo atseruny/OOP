@@ -285,6 +285,54 @@ std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, i
 	return node;
 }
 
+
+std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+{
+	if (tokens[pos].type != NodeType::Var)
+		throw std::runtime_error("Expected function name");
+
+	auto node = std::make_unique<CallNode>();
+	node->name = tokens[pos].value;
+
+	pos++;
+
+	if (tokens[pos].type != NodeType::OpBr)
+		throw std::runtime_error("Expected (");
+
+	pos++;
+
+	while (tokens[pos].type != NodeType::ClBr)
+	{
+		std::vector<Token> expr;
+
+		int depth = 0;
+
+		while (!(tokens[pos].type == NodeType::Comma && depth == 0) &&
+				!(tokens[pos].type == NodeType::ClBr && depth == 0))
+		{
+			if (tokens[pos].type == NodeType::OpBr) depth++;
+			if (tokens[pos].type == NodeType::ClBr) depth--;
+
+			expr.push_back(tokens[pos++]);
+		}
+
+		expr.push_back(Token("", NodeType::EofEx));
+
+		node->args.push_back(parseExpression(expr, ST));
+
+		if (tokens[pos].type == NodeType::Comma)
+			pos++;
+	}
+
+	pos++;
+
+	if (tokens[pos].type == NodeType::Semi)
+		pos++;
+
+	return node;
+}
+
+
 std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
 	if (static_cast<size_t>(pos) >= tokens.size())
@@ -298,6 +346,9 @@ std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST
 			return parseVarDecl(tokens, ST, pos);
 		case NodeType::Var:
 		{
+			if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::OpBr)
+				return parseCall(tokens, ST, pos);
+
 			if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::Assign)
 				return parseAssign(tokens, ST, pos);
 			break;

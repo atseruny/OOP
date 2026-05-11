@@ -18,8 +18,10 @@ private:
 	std::vector<int> regs;
 	int next;
 	std::vector<Instruction> program;
+	std::unordered_map<std::string, int> functions;
 	std::vector<int> constants;
 	int cmpFlag;
+
 
 	int compileNum(Node* node);
 	int compileVar(Node* node);
@@ -29,6 +31,9 @@ private:
 	int compileIf(Node* node);
 	int compileComp(Node* node);
 	int compileWhile(Node* node);
+	// void compileFunction(FuncNode* fn);
+	int compileReturn(Node* node);
+
 
 	void parseLine(const std::string& line);
 	int regIndex(const std::string& r);
@@ -41,6 +46,6 @@ public:
 	int compile(Node* node);
 	void writeInExe();
 	void loadFile(const std::string& name);
-	int execute(SymbolTable& ST);
+	// int execute(SymbolTable& ST);
 
 };
