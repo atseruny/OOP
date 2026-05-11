@@ -12,6 +12,7 @@
 #include "../parser_v3/State.hpp"
 #include <iomanip>
 #include "FuncNode.hpp"
+#include <unordered_set>
 
 std::vector<std::string> lexer(std::stringstream& line);
 std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
@@ -49,7 +50,10 @@ enum class OpCode : uint8_t
 	JG,
 	JL,
 	JGE,
-	JLE
+	JLE,
+
+	CALL,
+	RET
 };
 
 struct Instruction

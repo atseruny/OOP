@@ -17,9 +17,9 @@ enum class ReturnType
 class ReturnNode : public Node
 {
 public:
-    std::unique_ptr<Node> expr;
+	std::unique_ptr<Node> expr;
 
-    ReturnNode() : Node(NodeType::Ret) {}
+	ReturnNode() : Node(NodeType::Ret) {}
 };
 
 class FuncNode : public Node

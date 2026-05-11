@@ -277,7 +277,7 @@ std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, i
 		expr.push_back(tokens[pos++]);
 	}
 
-	pos++; // skip ';'
+	pos++;
 	expr.push_back(Token("", NodeType::EofEx));
 
 	node->expr = parseExpression(expr, ST);
@@ -374,7 +374,7 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 		throw std::runtime_error("Expected a type " + tokens[pos].value);
 
 	pos++;
-	
+
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected function name " + tokens[pos].value);
 
@@ -387,7 +387,6 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 
 	pos++;
 
-	// ---- PARAMETERS ----
 	while (tokens[pos].type != NodeType::ClBr)
 	{
 		if (tokens[pos].type != NodeType::Type)
@@ -405,15 +404,14 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 		func->params.push_back({type, name});
 
 		if (tokens[pos].type == NodeType::Semi)
-			pos++; // skip ','
+			pos++;
 		else if (tokens[pos].type != NodeType::ClBr)
 			throw std::runtime_error("Expected ',' or ')' " + tokens[pos].value);
 
 	}
 
-	pos++; // skip ')'
+	pos++;
 
-	// ---- FUNCTION SCOPE ----
 	ST.enterScope();
 	for (const auto& p : func->params)
 	{
@@ -423,14 +421,13 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 		ST.declareVariable(p.name);
 	}
 
-	// ---- BODY ----
 	if (tokens[pos].type != NodeType::OpBody)
 		throw std::runtime_error("Expected { for function body " + tokens[pos].value);
 	
 	insideFunction = 1;
-    func->body = std::unique_ptr<BlockNode>(
-        static_cast<BlockNode*>(parseBlock(tokens, ST, pos).release())
-    );
+	func->body = std::unique_ptr<BlockNode>(
+		static_cast<BlockNode*>(parseBlock(tokens, ST, pos).release())
+	);
 	insideFunction = 0;
 	ST.exitScope();
 	for (auto& stmt : func->body->statements)
@@ -444,12 +441,11 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 	return func;
 }
 
-
 std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
 {
 	std::vector<std::unique_ptr<Node>> functions;
-	// auto block = std::make_unique<BlockNode>();
 
+	std::unordered_set<std::string> functionNames;
 
 	while (tokens[pos].type != NodeType::EofEx)
 	{
@@ -458,7 +454,26 @@ std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTabl
 		if (tokens[pos].type != NodeType::Func)
 			throw std::runtime_error("Only functions allowed at global scope");
 
-		functions.push_back(parseFunction(tokens, ST, pos));
+		auto func = parseFunction(tokens, ST, pos);
+
+		FuncNode* fn = dynamic_cast<FuncNode*>(func.get());
+
+		if (!fn)
+			throw std::runtime_error("Internal parser error");
+
+		if (functionNames.find(fn->name) != functionNames.end())
+			throw std::runtime_error("Multiple definition of function: " + fn->name);
+
+		if (fn->retType == ReturnType::_void && fn->returnNode != nullptr &&
+				fn->returnNode->expr != nullptr)
+			throw std::runtime_error("Void function cannot return a value");
+	
+		if (fn->retType == ReturnType::_int && fn->returnNode == nullptr)
+			throw std::runtime_error("Function should return a value");
+
+		functionNames.insert(fn->name);
+
+		functions.push_back(std::move(func));
 
 		if (pos == oldPos)
 			throw std::runtime_error("Parser stuck (no progress)");

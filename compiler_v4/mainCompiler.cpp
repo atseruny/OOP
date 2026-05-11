@@ -177,10 +177,12 @@ int main(int argc, char** argv)
 
 		// for(auto& c:tokens)
 		// 	printNode(c);
-		for(auto& c:trees)
+		VM vm;
+		for(auto& c:trees){
 			printAST(c.get());
-		// VM vm;
-		// vm.compile(tree.get());
+			std::cout <<"\nNEXT FUNC\n";
+			vm.compile(c.get());
+		}
 		// vm.visualize();
 		// vm.writeInExe();
 
