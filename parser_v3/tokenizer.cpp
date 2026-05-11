@@ -70,8 +70,10 @@ std::vector<Token> tokenizer(const std::vector<std::string> &words)
 			tokens.push_back(Token(words[i], NodeType::OpBody));
 		else if (words[i] == "}")
 			tokens.push_back(Token(words[i], NodeType::ClBody));
+		else if (words[i] == ",")
+			tokens.push_back(Token(words[i], NodeType::Comma));
 		else
-			throw std::runtime_error("unexpected token");
+			throw std::runtime_error("unexpected token " + words[i]);
 	}
 	tokens.push_back(Token("", NodeType::EofEx));
 	return tokens;

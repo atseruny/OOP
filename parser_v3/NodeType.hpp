@@ -29,4 +29,6 @@ enum class NodeType
 	Block,		// {}
 	Ret,		// return
 	Func,
+	Call,		// f()
+	Comma,		// ,
 };
