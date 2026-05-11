@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../parser_v3/NodeType.hpp"
+#include "NodeType.hpp"
 #include <cstdint>
 #include "IfNode.hpp"
 #include "WhileNode.hpp"
@@ -8,8 +8,8 @@
 #include <fstream>
 #include "VM.hpp"
 #include "SymbolTable.hpp"
-#include "../parser_v3/Token.hpp"
-#include "../parser_v3/State.hpp"
+#include "Token.hpp"
+#include "State.hpp"
 #include <iomanip>
 #include "FuncNode.hpp"
 #include <unordered_set>

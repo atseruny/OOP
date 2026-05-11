@@ -1,4 +1,4 @@
-#include "Compiler.hpp"
+#include "../includes/Compiler.hpp"
 
 int insideFunction = 0;
 
@@ -106,6 +106,8 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		operands.push(std::move(op));
 	}
 
+	if (operands.empty())
+		throw std::runtime_error("Empty expression");
 	return std::move(operands.top());
 }
 
@@ -454,7 +456,7 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 
 		func->params.push_back({type, name});
 
-		if (tokens[pos].type == NodeType::Semi)
+		if (tokens[pos].type == NodeType::Comma)
 			pos++;
 		else if (tokens[pos].type != NodeType::ClBr)
 			throw std::runtime_error("Expected ',' or ')' " + tokens[pos].value);

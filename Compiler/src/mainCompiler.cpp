@@ -1,4 +1,4 @@
-#include "Compiler.hpp"
+#include "../includes/Compiler.hpp"
 
 void printNode(const Token& node)
 {
@@ -189,10 +189,10 @@ int main(int argc, char** argv)
 		// 	printNode(c);
 		VM vm;
 		for(auto& c:trees){
-			printAST(c.get());
-			std::cout <<"\nNEXT FUNC\n";
-			// vm.compile(c.get());
-			// vm.writeInExe();
+			// printAST(c.get());
+			// std::cout <<"\nNEXT FUNC\n";
+			vm.compile(c.get());
+			vm.writeInExe();
 		}
 		// vm.visualize();
 

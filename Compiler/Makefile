@@ -4,10 +4,12 @@ NAME2 = VirtualMachine
 CXX = c++
 CXXFLAGS = -Wall -Wextra -std=c++17
 
-COMPILER_SRC = mainCompiler.cpp ../parser_v3/lexer.cpp ../parser_v3/tokenizer.cpp parser.cpp VM.cpp SymbolTable.cpp
+SRC_DIR = src
+
+COMPILER_SRC = $(SRC_DIR)/mainCompiler.cpp $(SRC_DIR)/lexer.cpp $(SRC_DIR)/tokenizer.cpp $(SRC_DIR)/parser.cpp $(SRC_DIR)/VM.cpp $(SRC_DIR)/SymbolTable.cpp
 COMPILER_OBJ = $(COMPILER_SRC:.cpp=.o)
 
-VM_SRC = mainVM.cpp VM.cpp SymbolTable.cpp
+VM_SRC = $(SRC_DIR)/mainVM.cpp $(SRC_DIR)/VM.cpp $(SRC_DIR)/SymbolTable.cpp
 VM_OBJ = $(VM_SRC:.cpp=.o)
 
 all: $(NAME1) $(NAME2)

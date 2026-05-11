@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../parser_v3/NodeType.hpp"
+#include "NodeType.hpp"
 #include <stack>
-#include "../parser_v3/Token.hpp"
+#include "Token.hpp"
 #include <sstream>
 #include <memory>
 
