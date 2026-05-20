@@ -1,6 +1,6 @@
 #include "../includes/VM.hpp"
 
-VM::VM() : regs(100), next(0), cmpFlag(0) {}
+VM::VM() : regs(100), next(1), cmpFlag(0) {}
 
 VM::~VM() {}
 
@@ -172,12 +172,22 @@ void VM::compileFunction(Node *node)
 	FuncNode *fn = static_cast<FuncNode *>(node);
 	functions[fn->name] = static_cast<int32_t>(program.size());
 
-	int32_t skipJmp = static_cast<int32_t>(program.size());
-	program.push_back({static_cast<uint8_t>(OpCode::JMP),
-					   0, 0, 0});
+	for (int i = fn->params.size() - 1; i >= 0; --i)
+	{
+		int32_t reg = next++;
 
+		program.push_back({static_cast<uint8_t>(OpCode::POP),
+						   static_cast<uint8_t>(reg),
+						   0,
+						   0});
+
+		program.push_back({static_cast<uint8_t>(OpCode::STORE_VAR),
+						   static_cast<uint8_t>(reg),
+						   static_cast<uint8_t>(fn->params[i].symAddr),
+						   0});
+	}
 	int32_t savedNext = next;
-	next = 0;
+	// next = 0;
 
 	compile(fn->body.get());
 
@@ -190,15 +200,24 @@ void VM::compileFunction(Node *node)
 
 	next = savedNext;
 
-	program[skipJmp].dest = static_cast<uint8_t>(program.size());
+	// program[skipJmp].dest = static_cast<uint8_t>(program.size());
 }
 
 int32_t VM::compileCall(Node *node)
 {
 	CallNode *cnode = static_cast<CallNode *>(node);
 
-	for (auto &arg : cnode->args)
-		compile(arg.get());
+	for (auto it = cnode->args.rbegin();
+		 it != cnode->args.rend();
+		 ++it)
+	{
+		int32_t reg = compile(it->get());
+
+		program.push_back({static_cast<uint8_t>(OpCode::PUSH),
+						   static_cast<uint8_t>(reg),
+						   0,
+						   0});
+	}
 
 	auto it = functions.find(cnode->name);
 	if (it == functions.end())
@@ -349,8 +368,13 @@ void VM::visualize() const
 			if (inst.dest != 0)
 				std::cout << " r" << static_cast<int32_t>(inst.dest);
 			break;
-		case OpCode::HALT:
-			std::cout << "HALT";
+		case OpCode::PUSH:
+			std::cout << "PUSH r"
+					  << static_cast<int32_t>(inst.dest);
+			break;
+		case OpCode::POP:
+			std::cout << "POP r"
+					  << static_cast<int32_t>(inst.dest);
 			break;
 		}
 
@@ -448,50 +472,41 @@ void VM::writeInExeCode(std::ostream &exe)
 			exe << "MOV r" << static_cast<int32_t>(inst.dest)
 				<< ", #" << constants[inst.left];
 			break;
-
 		case OpCode::LOAD_VAR:
 			exe << "MOV r" << static_cast<int32_t>(inst.dest)
 				<< ", [" << static_cast<int32_t>(inst.left) << "]";
 			break;
-
 		case OpCode::STORE_VAR:
 			exe << "MOV [" << static_cast<int32_t>(inst.left)
 				<< "], r" << static_cast<int32_t>(inst.dest);
 			break;
-
 		case OpCode::ADD:
 			exe << "ADD r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
 				<< ", r" << static_cast<int32_t>(inst.right);
 			break;
-
 		case OpCode::SUB:
 			exe << "SUB r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
 				<< ", r" << static_cast<int32_t>(inst.right);
 			break;
-
 		case OpCode::MUL:
 			exe << "MUL r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
 				<< ", r" << static_cast<int32_t>(inst.right);
 			break;
-
 		case OpCode::DIV:
 			exe << "DIV r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
 				<< ", r" << static_cast<int32_t>(inst.right);
 			break;
-
 		case OpCode::CMP:
 			exe << "CMP r" << static_cast<int32_t>(inst.left)
 				<< ", r" << static_cast<int32_t>(inst.right);
 			break;
-
 		case OpCode::JMP:
 			exe << "JMP " << static_cast<int32_t>(inst.dest);
 			break;
-
 		case OpCode::JE:
 			exe << "JE " << static_cast<int32_t>(inst.dest);
 			break;
@@ -510,18 +525,19 @@ void VM::writeInExeCode(std::ostream &exe)
 		case OpCode::JLE:
 			exe << "JLE " << static_cast<int32_t>(inst.dest);
 			break;
-
 		case OpCode::CALL:
 			exe << "CALL " << static_cast<int32_t>(inst.left);
 			break;
-
 		case OpCode::RET:
 			exe << "RET";
 			if (inst.dest != 0)
 				exe << " r" << static_cast<int32_t>(inst.dest);
 			break;
-		case OpCode::HALT:
-			exe << "HALT";
+		case OpCode::PUSH:
+			exe << "PUSH r" << static_cast<int32_t>(inst.dest);
+			break;
+		case OpCode::POP:
+			exe << "POP r" << static_cast<int32_t>(inst.dest);
 			break;
 		}
 

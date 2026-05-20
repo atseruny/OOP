@@ -6,6 +6,7 @@ struct Param
 {
 	std::string type;
 	std::string name;
+	size_t symAddr;
 };
 
 enum class ReturnType
@@ -28,8 +29,8 @@ public:
 	ReturnType retType;
 	std::vector<Param> params;
 	std::unique_ptr<BlockNode> body;
-	ReturnNode* returnNode = nullptr;
+	ReturnNode *returnNode = nullptr;
 
-	FuncNode() : Node(NodeType::Func) { }
+	FuncNode() : Node(NodeType::Func) {}
 	~FuncNode() = default;
 };

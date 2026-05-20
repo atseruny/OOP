@@ -6,35 +6,35 @@ Name		Size	Offset
 .CODE	28	5
 
 .SymblTbl
-Doo 12
+main 13
 foo 0
 
 .CODE
-JMP 12
-MOV r0, #10
-MOV [0], r0
-MOV r1, [0]
-MOV r2, #7
-ADD r3, r1, r2
-MOV r4, #2
-MUL r5, r3, r4
-MOV [1], r5
-MOV r6, [1]
-MOV [2], r6
+POP r1
+MOV [0], r1
+MOV r2, #10
+MOV [0], r2
+MOV r3, [0]
+MOV r4, #7
+ADD r5, r3, r4
+MOV r6, #2
+MUL r7, r5, r6
+MOV [1], r7
+MOV r8, [1]
+MOV [2], r8
 RET
-JMP 28
-MOV r0, #10
-MOV [3], r0
-MOV r1, [3]
-MOV r2, #7
-ADD r3, r1, r2
-MOV r4, #2
-MUL r5, r3, r4
-MOV [4], r5
-MOV r6, [3]
-MOV r7, #2
+MOV r2, #10
+MOV [3], r2
+MOV r3, [3]
+MOV r4, #7
+ADD r5, r3, r4
+MOV r6, #2
+MUL r7, r5, r6
+MOV [4], r7
+MOV r8, [3]
+PUSH r8
 CALL 0
-MOV r9, [4]
-MOV [5], r9
-MOV r10, [5]
-RET r10
+MOV r10, [4]
+MOV [5], r10
+MOV r11, [5]
+RET r11

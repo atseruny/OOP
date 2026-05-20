@@ -2,7 +2,7 @@
 
 int32_t insideFunction = 0;
 
-int32_t priority(Node* node)
+int32_t priority(Node *node)
 {
 	if (node->name == "*" || node->name == "/")
 		return 2;
@@ -11,14 +11,14 @@ int32_t priority(Node* node)
 	return 0;
 }
 
-std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& ST)
+std::unique_ptr<Node> parseExpression(std::vector<Token> &tokens, SymbolTable &ST)
 {
 	State state = State::Start;
 
 	std::stack<std::unique_ptr<Node>> operators;
 	std::stack<std::unique_ptr<Node>> operands;
 
-	for (const Token& t : tokens)
+	for (const Token &t : tokens)
 	{
 		state = FSM[static_cast<int32_t>(state)][static_cast<int32_t>(t.type)];
 
@@ -39,8 +39,8 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		else if (t.type == NodeType::Op || t.type == NodeType::Comp)
 		{
 			while (!operators.empty() &&
-				operators.top()->type != NodeType::OpBr &&
-				priority(operators.top().get()) >= priority(n.get()))
+				   operators.top()->type != NodeType::OpBr &&
+				   priority(operators.top().get()) >= priority(n.get()))
 			{
 				std::unique_ptr<Node> op = std::move(operators.top());
 				operators.pop();
@@ -48,10 +48,12 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 				if (operands.size() < 2)
 					throw std::runtime_error("invalid expression");
 
-				std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
-				std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
+				std::unique_ptr<Node> right = std::move(operands.top());
+				operands.pop();
+				std::unique_ptr<Node> left = std::move(operands.top());
+				operands.pop();
 
-				op->left  = std::move(left);
+				op->left = std::move(left);
 				op->right = std::move(right);
 
 				operands.push(std::move(op));
@@ -70,10 +72,12 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 				if (operands.size() < 2)
 					throw std::runtime_error("invalid expression");
 
-				std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
-				std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
+				std::unique_ptr<Node> right = std::move(operands.top());
+				operands.pop();
+				std::unique_ptr<Node> left = std::move(operands.top());
+				operands.pop();
 
-				op->left  = std::move(left);
+				op->left = std::move(left);
 				op->right = std::move(right);
 
 				operands.push(std::move(op));
@@ -97,10 +101,12 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 		if (operands.size() < 2)
 			throw std::runtime_error("invalid expression");
 
-		std::unique_ptr<Node> right = std::move(operands.top()); operands.pop();
-		std::unique_ptr<Node> left  = std::move(operands.top()); operands.pop();
+		std::unique_ptr<Node> right = std::move(operands.top());
+		operands.pop();
+		std::unique_ptr<Node> left = std::move(operands.top());
+		operands.pop();
 
-		op->left  = std::move(left);
+		op->left = std::move(left);
 		op->right = std::move(right);
 
 		operands.push(std::move(op));
@@ -111,14 +117,14 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 	return std::move(operands.top());
 }
 
-std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseAssign(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected variable name " + tokens[pos].value);
-	
+
 	if (!ST.isDeclared(tokens[pos].value))
 		throw std::runtime_error("Variable " + tokens[pos].value + " is not declared");
-		
+
 	auto node = std::make_unique<Node>(NodeType::Assign);
 	node->left = std::make_unique<Node>(tokens[pos]);
 	node->left->symAddr = ST.getAddress(tokens[pos].value);
@@ -144,19 +150,19 @@ std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, i
 	return node;
 }
 
-std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseIf(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::If)
 		throw std::runtime_error("Expected if " + tokens[pos].value);
-	
+
 	pos++;
 	std::vector<Token> cond;
-	
+
 	if (tokens[pos].type != NodeType::OpBr)
 		throw std::runtime_error("Expected ( " + tokens[pos].value);
-	
+
 	pos++;
-	
+
 	while (tokens[pos].type != NodeType::ClBr)
 	{
 		if (tokens[pos].type == NodeType::EofEx)
@@ -164,12 +170,12 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int32
 		cond.push_back(tokens[pos++]);
 	}
 	cond.push_back(Token("", NodeType::EofEx));
-	
+
 	pos++;
-	
+
 	auto node = std::make_unique<IfNode>();
 	node->condition = parseExpression(cond, ST);
-	
+
 	if (tokens[pos].type == NodeType::OpBody)
 		node->trueBranch = parseBlock(tokens, ST, pos);
 	else
@@ -188,19 +194,19 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int32
 	return node;
 }
 
-std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseWhile(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::While)
 		throw std::runtime_error("Expected while " + tokens[pos].value);
-	
+
 	pos++;
 	std::vector<Token> cond;
-	
+
 	if (tokens[pos].type != NodeType::OpBr)
 		throw std::runtime_error("Expected ( " + tokens[pos].value);
-	
+
 	pos++;
-	
+
 	while (tokens[pos].type != NodeType::ClBr)
 	{
 		if (tokens[pos].type == NodeType::EofEx)
@@ -208,22 +214,21 @@ std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, in
 		cond.push_back(tokens[pos++]);
 	}
 	cond.push_back(Token("", NodeType::EofEx));
-	
+
 	pos++;
-	
+
 	auto node = std::make_unique<WhileNode>();
 	node->condition = parseExpression(cond, ST);
-	
+
 	if (tokens[pos].type != NodeType::OpBody)
 		throw std::runtime_error("Expected { " + tokens[pos].value);
-	
+
 	node->body = parseBlock(tokens, ST, pos);
-	
+
 	return node;
 }
 
-
-std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseVarDecl(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::Type)
 		throw std::runtime_error("Expected type" + tokens[pos].value);
@@ -231,14 +236,14 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 	pos++;
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected variable name" + tokens[pos].value);
-	
+
 	ST.declareVariable(tokens[pos].value);
 
 	std::string varName = tokens[pos].value;
-	
+
 	if (tokens[pos + 1].type == NodeType::Assign)
 		return parseAssign(tokens, ST, pos);
-	
+
 	pos++;
 
 	if (tokens[pos].type != NodeType::Semi)
@@ -249,7 +254,7 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 	return nullptr;
 }
 
-std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseReturn(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::Ret)
 		throw std::runtime_error("Expected return");
@@ -283,8 +288,7 @@ std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, i
 	return node;
 }
 
-
-std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::unique_ptr<Node> parseCall(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected function name");
@@ -306,10 +310,12 @@ std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int
 		int32_t depth = 0;
 
 		while (!(tokens[pos].type == NodeType::Comma && depth == 0) &&
-				!(tokens[pos].type == NodeType::ClBr && depth == 0))
+			   !(tokens[pos].type == NodeType::ClBr && depth == 0))
 		{
-			if (tokens[pos].type == NodeType::OpBr) depth++;
-			if (tokens[pos].type == NodeType::ClBr) depth--;
+			if (tokens[pos].type == NodeType::OpBr)
+				depth++;
+			if (tokens[pos].type == NodeType::ClBr)
+				depth--;
 
 			expr.push_back(tokens[pos++]);
 		}
@@ -330,39 +336,38 @@ std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int
 	return node;
 }
 
-
-std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseStatement(std::vector<Token> &tokens, SymbolTable &ST, int &pos)
 {
 	if (static_cast<size_t>(pos) >= tokens.size())
 		throw std::runtime_error("Unexpected end of input");
 
 	switch (tokens[pos].type)
 	{
-		case NodeType::If:
-			return parseIf(tokens, ST, pos);
-		case NodeType::Type:
-			return parseVarDecl(tokens, ST, pos);
-		case NodeType::Var:
-		{
-			if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::OpBr)
-				return parseCall(tokens, ST, pos);
+	case NodeType::If:
+		return parseIf(tokens, ST, pos);
+	case NodeType::Type:
+		return parseVarDecl(tokens, ST, pos);
+	case NodeType::Var:
+	{
+		if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::OpBr)
+			return parseCall(tokens, ST, pos);
 
-			if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::Assign)
-				return parseAssign(tokens, ST, pos);
-			break;
-		}
-		case NodeType::OpBody:
-			return parseBlock(tokens, ST, pos);
-		case NodeType::While:
-			return parseWhile(tokens, ST, pos);
-		case NodeType::Ret:
-		{
-			if (!insideFunction)
-				throw std::runtime_error("return outside of function");
-			return parseReturn(tokens, ST, pos);
-		}
-		default:
-			break;
+		if (static_cast<size_t>(pos + 1) < tokens.size() && tokens[pos + 1].type == NodeType::Assign)
+			return parseAssign(tokens, ST, pos);
+		break;
+	}
+	case NodeType::OpBody:
+		return parseBlock(tokens, ST, pos);
+	case NodeType::While:
+		return parseWhile(tokens, ST, pos);
+	case NodeType::Ret:
+	{
+		if (!insideFunction)
+			throw std::runtime_error("return outside of function");
+		return parseReturn(tokens, ST, pos);
+	}
+	default:
+		break;
 	}
 	std::vector<Token> expr;
 	while (static_cast<size_t>(pos) < tokens.size() && tokens[pos].type != NodeType::Semi)
@@ -375,7 +380,7 @@ std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST
 	return parseExpression(expr, ST);
 }
 
-std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseBlock(std::vector<Token> &tokens, SymbolTable &ST, int &pos)
 {
 	auto block = std::make_unique<BlockNode>();
 
@@ -404,8 +409,7 @@ std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, in
 	return block;
 }
 
-
-std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseFunction(std::vector<Token> &tokens, SymbolTable &ST, int &pos)
 {
 	if (tokens[pos].type != NodeType::Func)
 		throw std::runtime_error("Expected keyword \"Func\" " + tokens[pos].value);
@@ -413,7 +417,7 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 	pos++;
 	if (tokens[pos].type != NodeType::Type)
 		throw std::runtime_error("Expected a type " + tokens[pos].value);
-	
+
 	auto func = std::make_unique<FuncNode>();
 	if (tokens[pos].value == "int")
 		func->retType = ReturnType::_int;
@@ -432,9 +436,10 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 	pos++;
 
 	if (tokens[pos].type != NodeType::OpBr)
-		throw std::runtime_error("Expected ( "  + tokens[pos].value);
+		throw std::runtime_error("Expected ( " + tokens[pos].value);
 
 	pos++;
+	ST.enterScope();
 
 	while (tokens[pos].type != NodeType::ClBr)
 	{
@@ -448,49 +453,42 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 			throw std::runtime_error("Expected parameter name " + tokens[pos].value);
 
 		std::string name = tokens[pos].value;
+
+		if (ST.isDeclared(name))
+			throw std::runtime_error("Duplicate parameter: " + name);
+
+		ST.declareVariable(name);
+
 		pos++;
 
-		func->params.push_back({type, name});
+		func->params.push_back({type, name, ST.getAddress(name)});
 
 		if (tokens[pos].type == NodeType::Comma)
 			pos++;
 		else if (tokens[pos].type != NodeType::ClBr)
-			throw std::runtime_error("Expected ',' or ')' " + tokens[pos].value);
-
+			throw std::runtime_error(
+				"Expected ',' or ')' " + tokens[pos].value);
 	}
-
 	pos++;
-
-	ST.enterScope();
-	for (const auto& p : func->params)
-	{
-		if (ST.isDeclared(p.name))
-			throw std::runtime_error("Duplicate parameter: " + p.name);
-
-		ST.declareVariable(p.name);
-	}
-
 	if (tokens[pos].type != NodeType::OpBody)
 		throw std::runtime_error("Expected { for function body " + tokens[pos].value);
-	
+
 	insideFunction = 1;
-	func->body = std::unique_ptr<BlockNode>(
-		static_cast<BlockNode*>(parseBlock(tokens, ST, pos).release())
-	);
+	func->body = std::unique_ptr<BlockNode>(static_cast<BlockNode *>(parseBlock(tokens, ST, pos).release()));
 	insideFunction = 0;
 	ST.exitScope();
-	for (auto& stmt : func->body->statements)
+	for (auto &stmt : func->body->statements)
 	{
 		if (stmt->type == NodeType::Ret)
 		{
-			func->returnNode = static_cast<ReturnNode*>(stmt.get());
+			func->returnNode = static_cast<ReturnNode *>(stmt.get());
 			break;
 		}
 	}
 	return func;
 }
 
-std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
+std::vector<std::unique_ptr<Node>> parser(std::vector<Token> &tokens, SymbolTable &ST, int32_t &pos)
 {
 	std::vector<std::unique_ptr<Node>> functions;
 
@@ -505,7 +503,7 @@ std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTabl
 
 		auto func = parseFunction(tokens, ST, pos);
 
-		FuncNode* fn = dynamic_cast<FuncNode*>(func.get());
+		FuncNode *fn = dynamic_cast<FuncNode *>(func.get());
 
 		if (!fn)
 			throw std::runtime_error("Internal parser error");
@@ -514,9 +512,9 @@ std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTabl
 			throw std::runtime_error("Multiple definition of function: " + fn->name);
 
 		if (fn->retType == ReturnType::_void && fn->returnNode != nullptr &&
-				fn->returnNode->expr != nullptr)
+			fn->returnNode->expr != nullptr)
 			throw std::runtime_error("Void function cannot return a value");
-	
+
 		if (fn->retType == ReturnType::_int && fn->returnNode == nullptr)
 			throw std::runtime_error("Function should return a value");
 

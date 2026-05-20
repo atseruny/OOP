@@ -8,13 +8,13 @@ Func void foo(int a)
 	return;
 }
 
-Func int Doo(int a)
+Func int main()
 {
-	a = 10;
+	int a = 10;
 
 	int b = (a + 7)*2;
 
-	foo(a,2);
+	foo(a);
 	int c = b;
 	return c;
 }
