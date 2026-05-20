@@ -4,17 +4,16 @@
 #include "CPU.hpp"
 #include "Loader.hpp"
 
-
 class Executor
 {
 public:
 	Executor();
-	~Executor() = default;
-	void loadAndRun(const std::string& exePath, bool debug);
+	~Executor();
+	void loadAndRun(const std::string &exePath);
+	std::ifstream validate(const std::string &exePath);
 
 private:
-	Memory memory;
+	Memory *memory;
 	std::vector<int32_t> constPool;
-	CPU cpu;
-
+	CPU *cpu;
 };

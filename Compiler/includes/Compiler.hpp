@@ -67,7 +67,6 @@ enum class OpCode : uint8_t
 	CALL,
 	RET,
 
-	HALT
 };
 
 struct Instruction

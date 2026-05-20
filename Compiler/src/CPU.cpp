@@ -1,6 +1,6 @@
 #include "../includes/CPU.hpp"
 
-CPU::CPU(Memory& m, std::vector<int32_t>& cp): IP(0), SP(STACK_BASE), cmpFlag(0), halted(false), mem(m), constPool(cp)
+CPU::CPU(): IP(0), SP(STACK_BASE), cmpFlag(0), halted(false)
 {
 	for (int i = 0; i < NUM_REGS; ++i)
 		regs[i] = 0;

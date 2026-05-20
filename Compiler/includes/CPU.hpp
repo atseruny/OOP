@@ -12,7 +12,7 @@ static constexpr uint8_t REG_FP   = 3;   // frame pointer
 class CPU
 {
 public:
-	CPU(Memory& m, std::vector<int32_t>& cp);
+	CPU();
 	~CPU() = default;
 
 	void run();
@@ -25,7 +25,6 @@ private:
 	int32_t  cmpFlag;          // result of last CMP
 	bool halted;
 
-	Memory& mem;
 	std::vector<int32_t>& constPool;
 
 	int32_t reg(uint8_t r)const;
