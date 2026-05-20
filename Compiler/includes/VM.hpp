@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Compiler.hpp"
-#include "SymbolTable.hpp"
 
 struct Instruction;
 
@@ -12,38 +11,42 @@ enum class Operand
 	CONST,
 };
 
+struct SectionInfo
+{
+	std::string name;
+	uint32_t size;
+	uint32_t offset;
+};
+
+
 class VM
 {
 private:
-	std::vector<int> regs;
-	int next;
+	std::vector<int32_t> regs;
+	int32_t next;
 	std::vector<Instruction> program;
-	std::unordered_map<std::string, int> functions;
-	std::vector<int> constants;
-	int cmpFlag;
+	std::unordered_map<std::string, int32_t> functions;
+	std::vector<int32_t> constants;
+	int32_t cmpFlag;
 
-	int compileNum(Node *node);
-	int compileVar(Node *node);
-	int compileOp(Node *node);
-	int compileAssign(Node *node);
-	int compileBlock(Node *node);
-	int compileIf(Node *node);
-	int compileComp(Node *node);
-	int compileWhile(Node *node);
+	int32_t compileNum(Node *node);
+	int32_t compileVar(Node *node);
+	int32_t compileOp(Node *node);
+	int32_t compileAssign(Node *node);
+	int32_t compileBlock(Node *node);
+	int32_t compileIf(Node *node);
+	int32_t compileComp(Node *node);
+	int32_t compileWhile(Node *node);
 	void compileFunction(Node *node);
-	int compileReturn(Node *node);
-	int compileCall(Node *node);
+	int32_t compileReturn(Node *node);
+	int32_t compileCall(Node *node);
 
-	void parseLine(const std::string &line);
-	int regIndex(const std::string &r);
-	Operand defType(const std::string &var) const;
+	void writeInExeCode(std::ostream &exe);
 
 public:
 	VM();
 	~VM();
 	void visualize() const;
-	int compile(Node *node);
+	int32_t compile(Node *node);
 	void writeInExe();
-	void loadFile(const std::string &name);
-	// int execute(SymbolTable& ST);
 };

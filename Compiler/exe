@@ -1,0 +1,40 @@
+~AnushFile
+Header Size: 2
+
+Name		Size	Offset
+.SymblTbl	23	79
+.CODE	324	102
+
+.SymblTbl
+Doo 12
+foo 0
+
+.CODE
+JMP 12
+MOV r0, #10
+MOV [0], r0
+MOV r1, [0]
+MOV r2, #7
+ADD r3, r1, r2
+MOV r4, #2
+MUL r5, r3, r4
+MOV [1], r5
+MOV r6, [1]
+MOV [2], r6
+RET
+JMP 28
+MOV r0, #10
+MOV [3], r0
+MOV r1, [3]
+MOV r2, #7
+ADD r3, r1, r2
+MOV r4, #2
+MUL r5, r3, r4
+MOV [4], r5
+MOV r6, [3]
+MOV r7, #2
+CALL 0
+MOV r9, [4]
+MOV [5], r9
+MOV r10, [5]
+RET r10

@@ -6,20 +6,31 @@
 #include "WhileNode.hpp"
 #include "BlockNode.hpp"
 #include <fstream>
-#include "VM.hpp"
 #include "SymbolTable.hpp"
 #include "Token.hpp"
-#include "State.hpp"
 #include <iomanip>
 #include "FuncNode.hpp"
 #include <unordered_set>
 #include "CallNode.hpp"
+#include "Memory.hpp"
+#include "VM.hpp"
 
 std::vector<std::string> lexer(std::stringstream& line);
-std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
-std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
-std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int& pos);
+std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos);
+std::unique_ptr<Node> parseBlock(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos);
+std::unique_ptr<Node> parseStatement(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos);
+void printNode(const Token& node);
+void printAST(Node* node);
 
+
+enum class State
+{
+	Start,
+	Wait_operator,
+	Wait_operand,
+	Error,
+	End
+};
 
 inline State FSM[3][6] =
 {
@@ -35,7 +46,7 @@ inline State FSM[3][6] =
 
 enum class OpCode : uint8_t
 {
-	LOAD_NUM,
+	LOAD_NUM = 0,
 	LOAD_VAR,
 	STORE_VAR,
 
@@ -54,7 +65,9 @@ enum class OpCode : uint8_t
 	JLE,
 
 	CALL,
-	RET
+	RET,
+
+	HALT
 };
 
 struct Instruction

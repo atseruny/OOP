@@ -1,8 +1,8 @@
 #include "../includes/Compiler.hpp"
 
-int insideFunction = 0;
+int32_t insideFunction = 0;
 
-int priority(Node* node)
+int32_t priority(Node* node)
 {
 	if (node->name == "*" || node->name == "/")
 		return 2;
@@ -20,7 +20,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 
 	for (const Token& t : tokens)
 	{
-		state = FSM[static_cast<int>(state)][static_cast<int>(t.type)];
+		state = FSM[static_cast<int32_t>(state)][static_cast<int32_t>(t.type)];
 
 		if (state == State::Error)
 			throw std::runtime_error("unexpected token " + t.value);
@@ -111,7 +111,7 @@ std::unique_ptr<Node> parseExpression(std::vector<Token>& tokens, SymbolTable& S
 	return std::move(operands.top());
 }
 
-std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected variable name " + tokens[pos].value);
@@ -144,7 +144,7 @@ std::unique_ptr<Node> parseAssign(std::vector<Token>& tokens, SymbolTable& ST, i
 	return node;
 }
 
-std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::If)
 		throw std::runtime_error("Expected if " + tokens[pos].value);
@@ -174,11 +174,7 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& 
 		node->trueBranch = parseBlock(tokens, ST, pos);
 	else
 		node->trueBranch = parseStatement(tokens, ST, pos);
-	// if (tokens[pos].type != NodeType::OpBody)
-	// 	throw std::runtime_error("Expected {");
-	
-	// node->trueBranch = parseBlock(tokens, ST, pos);
-	
+
 	if (tokens[pos].type == NodeType::Else)
 	{
 		pos++;
@@ -192,7 +188,7 @@ std::unique_ptr<Node> parseIf(std::vector<Token>& tokens, SymbolTable& ST, int& 
 	return node;
 }
 
-std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::While)
 		throw std::runtime_error("Expected while " + tokens[pos].value);
@@ -227,7 +223,7 @@ std::unique_ptr<Node> parseWhile(std::vector<Token>& tokens, SymbolTable& ST, in
 }
 
 
-std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::Type)
 		throw std::runtime_error("Expected type" + tokens[pos].value);
@@ -253,7 +249,7 @@ std::unique_ptr<Node> parseVarDecl(std::vector<Token>& tokens, SymbolTable& ST, 
 	return nullptr;
 }
 
-std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::Ret)
 		throw std::runtime_error("Expected return");
@@ -288,7 +284,7 @@ std::unique_ptr<Node> parseReturn(std::vector<Token>& tokens, SymbolTable& ST, i
 }
 
 
-std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	if (tokens[pos].type != NodeType::Var)
 		throw std::runtime_error("Expected function name");
@@ -307,7 +303,7 @@ std::unique_ptr<Node> parseCall(std::vector<Token>& tokens, SymbolTable& ST, int
 	{
 		std::vector<Token> expr;
 
-		int depth = 0;
+		int32_t depth = 0;
 
 		while (!(tokens[pos].type == NodeType::Comma && depth == 0) &&
 				!(tokens[pos].type == NodeType::ClBr && depth == 0))
@@ -494,7 +490,7 @@ std::unique_ptr<Node> parseFunction(std::vector<Token>& tokens, SymbolTable& ST,
 	return func;
 }
 
-std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int& pos)
+std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTable& ST, int32_t& pos)
 {
 	std::vector<std::unique_ptr<Node>> functions;
 
@@ -502,7 +498,7 @@ std::vector<std::unique_ptr<Node>> parser(std::vector<Token>& tokens, SymbolTabl
 
 	while (tokens[pos].type != NodeType::EofEx)
 	{
-		int oldPos = pos;
+		int32_t oldPos = pos;
 
 		if (tokens[pos].type != NodeType::Func)
 			throw std::runtime_error("Only functions allowed at global scope");

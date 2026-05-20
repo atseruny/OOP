@@ -15,7 +15,7 @@ public:
 	std::unique_ptr<Node> left;
 	std::unique_ptr<Node> right;
 
-	int value = 0;
+	int32_t value = 0;
 	size_t symAddr = 0;
 	Operator op;
 
