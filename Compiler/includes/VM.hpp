@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Compiler.hpp"
-
+#include <algorithm>
 struct Instruction;
 
 enum class Operand
@@ -17,7 +17,6 @@ struct SectionInfo
 	uint32_t size;
 	uint32_t offset;
 };
-
 
 class VM
 {

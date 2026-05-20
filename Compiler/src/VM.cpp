@@ -369,6 +369,7 @@ void VM::writeInExe()
 	std::stringstream symtblSection;
 
 	symtblSection << ".SymblTbl\n";
+	uint32_t offset = 3;
 
 	for (const auto &[name, addr] : functions)
 		symtblSection << name << " " << addr << "\n";
@@ -386,16 +387,12 @@ void VM::writeInExe()
 	headerStream << "Header Size: 2\n\n";
 	headerStream << "Name\t\tSize\tOffset\n";
 
-	uint32_t currentOffset = 0;
-
-	currentOffset = headerStream.str().size();
-
 	sections.push_back({".SymblTbl",
-						static_cast<uint32_t>(symtblStr.size()),
+						static_cast<uint32_t>(functions.size()),
 						0});
 
 	sections.push_back({".CODE",
-						static_cast<uint32_t>(codeStr.size()),
+						static_cast<uint32_t>(std::count(codeStr.begin(), codeStr.end(), '\n') - 2),
 						0});
 
 	for (const auto &sec : sections)
@@ -407,9 +404,9 @@ void VM::writeInExe()
 	}
 	headerStream << "\n";
 
-	uint32_t headerSize = headerStream.str().size();
+	// uint32_t headerSize = headerStream.str().size();
 
-	sections[0].offset = headerSize;
+	sections[0].offset = offset;
 	sections[1].offset = sections[0].offset + sections[0].size;
 
 	std::stringstream finalHeader;

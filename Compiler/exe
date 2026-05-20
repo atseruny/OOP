@@ -2,8 +2,8 @@
 Header Size: 2
 
 Name		Size	Offset
-.SymblTbl	23	79
-.CODE	324	102
+.SymblTbl	2	3
+.CODE	28	5
 
 .SymblTbl
 Doo 12
