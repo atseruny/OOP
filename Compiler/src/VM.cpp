@@ -171,7 +171,7 @@ void VM::compileFunction(Node *node)
 {
 	FuncNode *fn = static_cast<FuncNode *>(node);
 	functions[fn->name] = static_cast<int32_t>(program.size());
-
+		// std::cout << "A\n";
 	for (int i = fn->params.size() - 1; i >= 0; --i)
 	{
 		int32_t reg = next++;
@@ -187,7 +187,6 @@ void VM::compileFunction(Node *node)
 						   0});
 	}
 	int32_t savedNext = next;
-	// next = 0;
 
 	compile(fn->body.get());
 
@@ -199,8 +198,6 @@ void VM::compileFunction(Node *node)
 	}
 
 	next = savedNext;
-
-	// program[skipJmp].dest = static_cast<uint8_t>(program.size());
 }
 
 int32_t VM::compileCall(Node *node)
@@ -289,99 +286,6 @@ int32_t VM::compile(Node *node)
 	}
 }
 
-//  visualize()  –  prints the instruction list to stdout
-
-void VM::visualize() const
-{
-	std::cout << "\n[VM Assembly]\n";
-	std::cout << "----------------------\n";
-
-	for (size_t i = 0; i < program.size(); i++)
-	{
-		const auto &inst = program[i];
-		std::cout << std::setw(3) << i << ": ";
-
-		switch (static_cast<OpCode>(inst.op))
-		{
-		case OpCode::LOAD_NUM:
-			std::cout << "MOV r" << static_cast<int32_t>(inst.dest)
-					  << ", #" << constants[inst.left];
-			break;
-		case OpCode::LOAD_VAR:
-			std::cout << "MOV r" << static_cast<int32_t>(inst.dest)
-					  << ", [" << static_cast<int32_t>(inst.left) << "]";
-			break;
-		case OpCode::STORE_VAR:
-			std::cout << "MOV [" << static_cast<int32_t>(inst.left)
-					  << "], r" << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::ADD:
-			std::cout << "ADD r" << static_cast<int32_t>(inst.dest)
-					  << ", r" << static_cast<int32_t>(inst.left)
-					  << ", r" << static_cast<int32_t>(inst.right);
-			break;
-		case OpCode::SUB:
-			std::cout << "SUB r" << static_cast<int32_t>(inst.dest)
-					  << ", r" << static_cast<int32_t>(inst.left)
-					  << ", r" << static_cast<int32_t>(inst.right);
-			break;
-		case OpCode::MUL:
-			std::cout << "MUL r" << static_cast<int32_t>(inst.dest)
-					  << ", r" << static_cast<int32_t>(inst.left)
-					  << ", r" << static_cast<int32_t>(inst.right);
-			break;
-		case OpCode::DIV:
-			std::cout << "DIV r" << static_cast<int32_t>(inst.dest)
-					  << ", r" << static_cast<int32_t>(inst.left)
-					  << ", r" << static_cast<int32_t>(inst.right);
-			break;
-		case OpCode::CMP:
-			std::cout << "CMP r" << static_cast<int32_t>(inst.left)
-					  << ", r" << static_cast<int32_t>(inst.right);
-			break;
-		case OpCode::JMP:
-			std::cout << "JMP " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JE:
-			std::cout << "JE " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JNE:
-			std::cout << "JNE " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JG:
-			std::cout << "JG " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JL:
-			std::cout << "JL " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JGE:
-			std::cout << "JGE " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::JLE:
-			std::cout << "JLE " << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::CALL:
-			std::cout << "CALL " << static_cast<int32_t>(inst.left);
-			break;
-		case OpCode::RET:
-			std::cout << "RET";
-			if (inst.dest != 0)
-				std::cout << " r" << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::PUSH:
-			std::cout << "PUSH r"
-					  << static_cast<int32_t>(inst.dest);
-			break;
-		case OpCode::POP:
-			std::cout << "POP r"
-					  << static_cast<int32_t>(inst.dest);
-			break;
-		}
-
-		std::cout << "\n";
-	}
-}
-
 //  writeInExe()  –  writes the instruction list as text to ./exe
 
 void VM::writeInExe()
@@ -393,7 +297,7 @@ void VM::writeInExe()
 	std::stringstream symtblSection;
 
 	symtblSection << ".SymblTbl\n";
-	uint32_t offset = 3;
+	uint32_t offset = 8;
 
 	for (const auto &[name, addr] : functions)
 		symtblSection << name << " " << addr << "\n";
@@ -431,7 +335,7 @@ void VM::writeInExe()
 	// uint32_t headerSize = headerStream.str().size();
 
 	sections[0].offset = offset;
-	sections[1].offset = sections[0].offset + sections[0].size;
+	sections[1].offset = sections[0].offset + sections[0].size + 2;
 
 	std::stringstream finalHeader;
 
@@ -459,7 +363,6 @@ void VM::writeInExe()
 
 void VM::writeInExeCode(std::ostream &exe)
 {
-
 	exe << "\n.CODE\n";
 
 	for (size_t i = 0; i < program.size(); i++)
@@ -470,77 +373,90 @@ void VM::writeInExeCode(std::ostream &exe)
 		{
 		case OpCode::LOAD_NUM:
 			exe << "MOV r" << static_cast<int32_t>(inst.dest)
-				<< ", #" << constants[inst.left];
+				<< ", #" << constants[inst.left] << std::endl;
 			break;
 		case OpCode::LOAD_VAR:
 			exe << "MOV r" << static_cast<int32_t>(inst.dest)
-				<< ", [" << static_cast<int32_t>(inst.left) << "]";
+				<< ", [" << static_cast<int32_t>(inst.left) << "]" << std::endl;
 			break;
 		case OpCode::STORE_VAR:
 			exe << "MOV [" << static_cast<int32_t>(inst.left)
-				<< "], r" << static_cast<int32_t>(inst.dest);
+				<< "], r" << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::ADD:
 			exe << "ADD r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
-				<< ", r" << static_cast<int32_t>(inst.right);
+				<< ", r" << static_cast<int32_t>(inst.right) << std::endl;
 			break;
 		case OpCode::SUB:
 			exe << "SUB r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
-				<< ", r" << static_cast<int32_t>(inst.right);
+				<< ", r" << static_cast<int32_t>(inst.right) << std::endl;
 			break;
 		case OpCode::MUL:
 			exe << "MUL r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
-				<< ", r" << static_cast<int32_t>(inst.right);
+				<< ", r" << static_cast<int32_t>(inst.right) << std::endl;
 			break;
 		case OpCode::DIV:
 			exe << "DIV r" << static_cast<int32_t>(inst.dest)
 				<< ", r" << static_cast<int32_t>(inst.left)
-				<< ", r" << static_cast<int32_t>(inst.right);
+				<< ", r" << static_cast<int32_t>(inst.right) << std::endl;
 			break;
 		case OpCode::CMP:
 			exe << "CMP r" << static_cast<int32_t>(inst.left)
-				<< ", r" << static_cast<int32_t>(inst.right);
+				<< ", r" << static_cast<int32_t>(inst.right) << std::endl;
 			break;
 		case OpCode::JMP:
-			exe << "JMP " << static_cast<int32_t>(inst.dest);
+			exe << "JMP " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JE:
-			exe << "JE " << static_cast<int32_t>(inst.dest);
+			exe << "JE " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JNE:
-			exe << "JNE " << static_cast<int32_t>(inst.dest);
+			exe << "JNE " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JG:
-			exe << "JG " << static_cast<int32_t>(inst.dest);
+			exe << "JG " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JL:
-			exe << "JL " << static_cast<int32_t>(inst.dest);
+			exe << "JL " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JGE:
-			exe << "JGE " << static_cast<int32_t>(inst.dest);
+			exe << "JGE " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::JLE:
-			exe << "JLE " << static_cast<int32_t>(inst.dest);
+			exe << "JLE " << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::CALL:
-			exe << "CALL " << static_cast<int32_t>(inst.left);
+			exe << "CALL " << static_cast<int32_t>(inst.left) << std::endl;
 			break;
 		case OpCode::RET:
 			exe << "RET";
 			if (inst.dest != 0)
 				exe << " r" << static_cast<int32_t>(inst.dest);
+			exe << std::endl;
 			break;
 		case OpCode::PUSH:
-			exe << "PUSH r" << static_cast<int32_t>(inst.dest);
+			exe << "PUSH r" << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		case OpCode::POP:
-			exe << "POP r" << static_cast<int32_t>(inst.dest);
+			exe << "POP r" << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
 		}
-
-		exe << "\n";
 	}
+	exe << "EXIT"<< std::endl;
+		// std::cout << "it->first"<<"\n";
+	auto it = functions.begin();
+	while (it != functions.end())
+	{
+		// std::cout << it->first<<"\n";
+		if (it->first == "main")
+			break;
+		it++;
+	}
+	// auto main_it = std::find(functions.begin(), functions.end(), "main");
+	if (it != functions.end())
+		exe << "CALL " << it->second << std::endl;
+	// 	throw std::runtime_error("Undefined __start___");
 }

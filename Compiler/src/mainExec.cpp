@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 		Executor exec;
 		std::ifstream file = exec.validate(exePath);
 		
-		// exec.loadAndRun(exePath, );
+		exec.loadAndRun(file);
 	}
 	catch (const std::exception &e)
 	{

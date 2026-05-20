@@ -1,3 +1,11 @@
+Func void f()
+{
+
+	int b = (1 + 7)*2;
+
+	int c = b;
+}
+
 Func void foo(int a)
 {
 	a = 10;

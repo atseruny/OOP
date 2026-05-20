@@ -9,7 +9,7 @@ class Executor
 public:
 	Executor();
 	~Executor();
-	void loadAndRun(const std::string &exePath);
+	void loadAndRun(const std::ifstream &exe);
 	std::ifstream validate(const std::string &exePath);
 
 private:

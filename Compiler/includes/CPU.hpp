@@ -23,9 +23,7 @@ private:
 	uint16_t IP;               // instruction pointer (indexes into code section)
 	uint16_t SP;               // stack pointer
 	int32_t  cmpFlag;          // result of last CMP
-	bool halted;
 
-	std::vector<int32_t>& constPool;
 
 	int32_t reg(uint8_t r)const;
 	void setReg(uint8_t r, int32_t v);
