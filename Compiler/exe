@@ -3,7 +3,7 @@ Header Size: 2
 
 Name		Size	Offset
 .SymblTbl	3	8
-.CODE	39	13
+.CODE	38	13
 
 .SymblTbl
 main 22
@@ -49,4 +49,3 @@ MOV [7], r10
 MOV r11, [7]
 RET r11
 EXIT
-CALL 22
