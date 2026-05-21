@@ -11,9 +11,9 @@ int main(int argc, char **argv)
 
 	std::string exePath = argv[1];
 
+	Executor exec;
 	try
 	{
-		Executor exec;
 		std::ifstream file = exec.validate(exePath);
 		
 		exec.loadAndRun(file);

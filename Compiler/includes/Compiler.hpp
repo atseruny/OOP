@@ -68,7 +68,8 @@ enum class OpCode : uint8_t
 	RET,
 
 	PUSH,
-	POP
+	POP,
+	EXIT
 };
 
 struct Instruction

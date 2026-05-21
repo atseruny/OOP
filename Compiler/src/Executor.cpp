@@ -3,6 +3,12 @@
 
 Executor::Executor() {}
 
+Executor::~Executor()
+{
+	delete memory;
+	delete cpu;
+}
+
 std::ifstream Executor::validate(const std::string &exePath)
 {
 	std::ifstream f(exePath);
@@ -13,28 +19,30 @@ std::ifstream Executor::validate(const std::string &exePath)
 	std::getline(f, line);
 	if (line != "~AnushFile")
 		throw std::runtime_error("Invalid file '" + exePath + "'");
-	std::cout << "--Settng up Execution Environment\n";
+	std::cout << "[Executor] Settng up Execution Environment\n";
 	memory = new Memory();
 	cpu = new CPU();
 	return f;
 }
 
-Executor::~Executor()
+
+void Executor::loadAndRun(std::ifstream& exe)
 {
-	delete memory;
-	delete cpu;
-}
+    std::cout << "\n[Executor] Loading program...\n";
 
-void Executor::loadAndRun(const std::ifstream &exe)
-{
-	// uint16_t nInstructions = Loader::load(exePath, memory, constPool);
-	// std::cout << "[VM] Loaded " << nInstructions << " instruction(s) into code section.\n";
-	// std::cout << "[VM] Running...\n\n";
+    uint16_t nInstructions = Loader::loadFromStream(exe, memory, constPool);
+ 
+    std::cout << "[Executor] Loaded " << nInstructions
+              << " instruction(s)\n";
+ 
+    memory->dump(CODE_BASE, CODE_BASE + nInstructions);
 
-	// cpu.run();
+    std::cout << "\n[Executor] Starting CPU...\n";
+ 
+    cpu->setConstPool(constPool);
+    cpu->run(memory);
+ 
+    std::cout << "\n[Executor] Execution complete.\n";
+    cpu->dumpRegisters();
 
-	// std::cout << "\n[VM] Execution finished.\n";
-
-	// cpu.dumpRegisters();
-	// memory.dump(DATA_BASE, DATA_BASE + 16);
 }

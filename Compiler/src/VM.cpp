@@ -1,6 +1,6 @@
 #include "../includes/VM.hpp"
 
-VM::VM() : regs(100), next(1), cmpFlag(0) {}
+VM::VM() : regs(100), next(4), cmpFlag(0) {}
 
 VM::~VM() {}
 
@@ -12,9 +12,9 @@ int32_t VM::compileNum(Node *node)
 	constants.push_back(node->value);
 
 	program.push_back({static_cast<uint8_t>(OpCode::LOAD_NUM),
-					   static_cast<uint8_t>(dest),
-					   cIdx,
-					   0});
+					static_cast<uint8_t>(dest),
+					cIdx,
+					0});
 
 	return dest;
 }
@@ -24,9 +24,9 @@ int32_t VM::compileVar(Node *node)
 	int32_t dest = next++;
 
 	program.push_back({static_cast<uint8_t>(OpCode::LOAD_VAR),
-					   static_cast<uint8_t>(dest),
-					   static_cast<uint8_t>(node->symAddr),
-					   0});
+					static_cast<uint8_t>(dest),
+					static_cast<uint8_t>(node->symAddr),
+					0});
 
 	return dest;
 }
@@ -58,9 +58,9 @@ int32_t VM::compileOp(Node *node)
 	}
 
 	program.push_back({static_cast<uint8_t>(op),
-					   static_cast<uint8_t>(dest),
-					   static_cast<uint8_t>(l),
-					   static_cast<uint8_t>(r)});
+					static_cast<uint8_t>(dest),
+					static_cast<uint8_t>(l),
+					static_cast<uint8_t>(r)});
 
 	return dest;
 }
@@ -72,9 +72,9 @@ int32_t VM::compileAssign(Node *node)
 	int32_t rhs = compile(node->right.get());
 
 	program.push_back({static_cast<uint8_t>(OpCode::STORE_VAR),
-					   static_cast<uint8_t>(rhs),
-					   static_cast<uint8_t>(addr),
-					   0});
+					static_cast<uint8_t>(rhs),
+					static_cast<uint8_t>(addr),
+					0});
 
 	return rhs;
 }
@@ -100,7 +100,7 @@ int32_t VM::compileIf(Node *node)
 	{
 		int32_t jmpEnd = program.size();
 		program.push_back({static_cast<uint8_t>(OpCode::JMP),
-						   0, 0, 0});
+						0, 0, 0});
 
 		program[jmpIndex].dest = static_cast<uint8_t>(program.size());
 
@@ -125,8 +125,8 @@ int32_t VM::compileWhile(Node *node)
 	compile(n->body.get());
 
 	program.push_back({static_cast<uint8_t>(OpCode::JMP),
-					   static_cast<uint8_t>(loopStart),
-					   0, 0});
+					static_cast<uint8_t>(loopStart),
+					0, 0});
 
 	program[jmpExit].dest = static_cast<uint8_t>(program.size());
 
@@ -139,9 +139,9 @@ int32_t VM::compileComp(Node *node)
 	int32_t r = compile(node->right.get());
 
 	program.push_back({static_cast<uint8_t>(OpCode::CMP),
-					   0,
-					   static_cast<uint8_t>(l),
-					   static_cast<uint8_t>(r)});
+					0,
+					static_cast<uint8_t>(l),
+					static_cast<uint8_t>(r)});
 
 	OpCode jmp;
 	if (node->name == "==")
@@ -162,7 +162,7 @@ int32_t VM::compileComp(Node *node)
 	int32_t jmpIndex = static_cast<int32_t>(program.size());
 
 	program.push_back({static_cast<uint8_t>(jmp),
-					   0, 0, 0});
+					0, 0, 0});
 
 	return jmpIndex;
 }
@@ -177,14 +177,14 @@ void VM::compileFunction(Node *node)
 		int32_t reg = next++;
 
 		program.push_back({static_cast<uint8_t>(OpCode::POP),
-						   static_cast<uint8_t>(reg),
-						   0,
-						   0});
+						static_cast<uint8_t>(reg),
+						0,
+						0});
 
 		program.push_back({static_cast<uint8_t>(OpCode::STORE_VAR),
-						   static_cast<uint8_t>(reg),
-						   static_cast<uint8_t>(fn->params[i].symAddr),
-						   0});
+						static_cast<uint8_t>(reg),
+						static_cast<uint8_t>(fn->params[i].symAddr),
+						0});
 	}
 	int32_t savedNext = next;
 
@@ -194,7 +194,7 @@ void VM::compileFunction(Node *node)
 		static_cast<OpCode>(program.back().op) != OpCode::RET)
 	{
 		program.push_back({static_cast<uint8_t>(OpCode::RET),
-						   0, 0, 0});
+						0, 0, 0});
 	}
 
 	next = savedNext;
@@ -205,15 +205,15 @@ int32_t VM::compileCall(Node *node)
 	CallNode *cnode = static_cast<CallNode *>(node);
 
 	for (auto it = cnode->args.rbegin();
-		 it != cnode->args.rend();
-		 ++it)
+		it != cnode->args.rend();
+		++it)
 	{
 		int32_t reg = compile(it->get());
 
 		program.push_back({static_cast<uint8_t>(OpCode::PUSH),
-						   static_cast<uint8_t>(reg),
-						   0,
-						   0});
+						static_cast<uint8_t>(reg),
+						0,
+						0});
 	}
 
 	auto it = functions.find(cnode->name);
@@ -223,9 +223,9 @@ int32_t VM::compileCall(Node *node)
 	int32_t dest = next++;
 
 	program.push_back({static_cast<uint8_t>(OpCode::CALL),
-					   static_cast<uint8_t>(dest),
-					   static_cast<uint8_t>(it->second),
-					   0});
+					static_cast<uint8_t>(dest),
+					static_cast<uint8_t>(it->second),
+					0});
 
 	return dest;
 }
@@ -239,14 +239,14 @@ int32_t VM::compileReturn(Node *node)
 		int32_t reg = compile(ret->expr.get());
 
 		program.push_back({static_cast<uint8_t>(OpCode::RET),
-						   static_cast<uint8_t>(reg),
-						   0, 0});
+						static_cast<uint8_t>(reg),
+						0, 0});
 
 		return reg;
 	}
 
 	program.push_back({static_cast<uint8_t>(OpCode::RET),
-					   0, 0, 0});
+					0, 0, 0});
 
 	return -1;
 }
@@ -365,6 +365,21 @@ void VM::writeInExeCode(std::ostream &exe)
 {
 	exe << "\n.CODE\n";
 
+	// std::cout << "it->first"<<"\n";
+	auto it = functions.begin();
+	while (it != functions.end())
+	{
+		// std::cout << it->first<<"\n";
+		if (it->first == "main")
+			break;
+		it++;
+	}
+	// auto main_it = std::find(functions.begin(), functions.end(), "main");
+	if (it != functions.end())
+		exe << "CALL " << it->second << std::endl;
+	// 	throw std::runtime_error("Undefined __start___");
+	exe << "EXIT"<< std::endl;
+
 	for (size_t i = 0; i < program.size(); i++)
 	{
 		const auto &inst = program[i];
@@ -443,20 +458,8 @@ void VM::writeInExeCode(std::ostream &exe)
 		case OpCode::POP:
 			exe << "POP r" << static_cast<int32_t>(inst.dest) << std::endl;
 			break;
+		default:
+			throw std::runtime_error("Undefined OpCode");
 		}
 	}
-	exe << "EXIT"<< std::endl;
-		// std::cout << "it->first"<<"\n";
-	auto it = functions.begin();
-	while (it != functions.end())
-	{
-		// std::cout << it->first<<"\n";
-		if (it->first == "main")
-			break;
-		it++;
-	}
-	// auto main_it = std::find(functions.begin(), functions.end(), "main");
-	if (it != functions.end())
-		exe << "CALL " << it->second << std::endl;
-	// 	throw std::runtime_error("Undefined __start___");
 }

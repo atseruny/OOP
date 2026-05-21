@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Compiler.hpp"
+#include <bitset>
 
 static constexpr uint16_t MEM_SIZE       = 0xFFFF;   // 65535 addressable words
 
@@ -10,11 +11,8 @@ static constexpr uint16_t CODE_LIMIT     = 0x1FFF;   // up to 8192 instructions
 static constexpr uint16_t DATA_BASE      = 0x2000;
 static constexpr uint16_t DATA_LIMIT     = 0x3FFF;
 
-static constexpr uint16_t HEAP_BASE      = 0x4000;
-static constexpr uint16_t HEAP_LIMIT     = 0xBFFF;
-
 static constexpr uint16_t STACK_BASE     = 0xFFFE;   // SP initial value (grows down)
-static constexpr uint16_t STACK_LIMIT    = 0xC000;
+static constexpr uint16_t STACK_LIMIT    = 0x4000;
 
 struct Instruction;
 
@@ -33,8 +31,9 @@ public:
 
 	void stackPush(uint16_t& sp, int32_t val);
 	int32_t stackPop(uint16_t& sp);
+	int32_t stackPeek(uint16_t sp) const;
 
 	void dump(uint16_t from, uint16_t to) const;
 private:
-	std::vector<int32_t> cells;
+	std::vector<uint32_t> cells;
 };

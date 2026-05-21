@@ -15,22 +15,22 @@ public:
 	CPU();
 	~CPU() = default;
 
-	void run();
+	void run(Memory* mem);
 	void dumpRegisters() const;
-
+	void setConstPool(const std::vector<int32_t>& _constPool);
 private:
 	int32_t regs[NUM_REGS];   // x0–x31  (x0 always 0)
 	uint16_t IP;               // instruction pointer (indexes into code section)
 	uint16_t SP;               // stack pointer
 	int32_t  cmpFlag;          // result of last CMP
-
+	std::vector<int32_t> constPool;
 
 	int32_t reg(uint8_t r)const;
 	void setReg(uint8_t r, int32_t v);
-	void push(int32_t val);
-	int32_t pop();
+	void push(int32_t val, Memory* mem);
+	int32_t pop(Memory* mem);
 
-	Instruction fetch();
-
-	void execute(const Instruction& inst);
+	Instruction fetch(const Memory *mem);
+	uint8_t decode(const Instruction& inst);
+	void execute(const Instruction& inst, const uint8_t op, Memory* mem);
 };

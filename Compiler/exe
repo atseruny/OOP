@@ -2,50 +2,41 @@
 Header Size: 2
 
 Name		Size	Offset
-.SymblTbl	3	8
-.CODE	38	13
+.SymblTbl	2	8
+.CODE	30	12
 
 .SymblTbl
-main 22
-foo 9
-f 0
+main 13
+foo 0
 
 .CODE
-MOV r1, #1
-MOV r2, #7
-ADD r3, r1, r2
-MOV r4, #2
-MUL r5, r3, r4
+CALL 13
+EXIT
+POP r4
+MOV [0], r4
+MOV r5, #10
 MOV [0], r5
 MOV r6, [0]
-MOV [1], r6
+MOV r7, #7
+ADD r8, r6, r7
+MOV r9, #2
+MUL r10, r8, r9
+MOV [1], r10
+MOV r11, [1]
+MOV [2], r11
 RET
-POP r1
-MOV [2], r1
-MOV r2, #10
-MOV [2], r2
-MOV r3, [2]
-MOV r4, #7
-ADD r5, r3, r4
-MOV r6, #2
-MUL r7, r5, r6
-MOV [3], r7
-MOV r8, [3]
-MOV [4], r8
-RET
-MOV r2, #10
-MOV [5], r2
-MOV r3, [5]
-MOV r4, #7
-ADD r5, r3, r4
-MOV r6, #2
-MUL r7, r5, r6
-MOV [6], r7
-MOV r8, [5]
-PUSH r8
-CALL 9
-MOV r10, [6]
-MOV [7], r10
-MOV r11, [7]
-RET r11
-EXIT
+MOV r5, #10
+MOV [3], r5
+MOV r6, [3]
+MOV r7, #7
+ADD r8, r6, r7
+MOV r9, #2
+MUL r10, r8, r9
+MOV [4], r10
+MOV r11, [3]
+PUSH r11
+CALL 0
+MOV r13, [4]
+MOV [5], r13
+MOV r14, #1
+RET r14
