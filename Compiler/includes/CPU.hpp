@@ -18,6 +18,13 @@ public:
 	void run(Memory* mem);
 	void dumpRegisters() const;
 	void setConstPool(const std::vector<int32_t>& _constPool);
+
+	bool stepOne(Memory* mem);
+	uint16_t getIP() const;
+	int32_t getReg(uint8_t r) const;
+	int32_t getCmpFlag() const;
+	uint16_t getSP()  const;
+
 private:
 	int32_t regs[NUM_REGS];   // x0–x31  (x0 always 0)
 	uint16_t IP;               // instruction pointer (indexes into code section)

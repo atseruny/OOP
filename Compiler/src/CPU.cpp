@@ -141,6 +141,40 @@ void CPU::execute(const Instruction& inst, const uint8_t op, Memory* mem)
 	}
 }
 
+bool CPU::stepOne(Memory* mem)
+{
+	Instruction inst = fetch(mem);
+	uint8_t opcode   = decode(inst);
+	if (static_cast<OpCode>(opcode) == OpCode::EXIT)
+		return false;
+
+	uint16_t oldIP = IP;
+	execute(inst, opcode, mem);
+	if (IP == oldIP)
+		IP++;
+	return true;
+}
+
+uint16_t CPU::getIP() const
+{
+	return IP;
+}
+
+int32_t CPU::getReg(uint8_t r) const
+{
+	return r == 0 ? 0 : regs[r];
+}
+
+int32_t CPU::getCmpFlag() const
+{
+	return cmpFlag;
+}
+
+uint16_t CPU::getSP() const
+{
+	return SP;
+}
+
 void CPU::run(Memory* mem)
 {
 	while (true) {
