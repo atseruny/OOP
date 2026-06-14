@@ -31,18 +31,17 @@ void Executor::loadAndRun(std::ifstream& exe)
     std::cout << "\n[Executor] Loading program...\n";
 
     uint16_t nInstructions = Loader::loadFromStream(exe, memory, constPool);
- 
+
     std::cout << "[Executor] Loaded " << nInstructions
               << " instruction(s)\n";
- 
+
     memory->dump(CODE_BASE, CODE_BASE + nInstructions);
 
     std::cout << "\n[Executor] Starting CPU...\n";
- 
+
     cpu->setConstPool(constPool);
     cpu->run(memory);
- 
+
     std::cout << "\n[Executor] Execution complete.\n";
     cpu->dumpRegisters();
-
 }

@@ -4,6 +4,7 @@
 #include <stack>
 #include "Token.hpp"
 #include <sstream>
+#include <cstdint>
 #include <memory>
 
 class Node
