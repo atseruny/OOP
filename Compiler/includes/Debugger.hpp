@@ -47,7 +47,4 @@ private:
 	void showCurrentLine() const;
 
 	uint16_t currentIP() const;
-	std::string disasm(uint16_t idx) const;
-
-	int32_t getReg(uint8_t r) const;
 };

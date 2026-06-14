@@ -4,10 +4,6 @@
 #include <unordered_set>
 #include <algorithm>
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
 static std::string trim(const std::string &s)
 {
 	size_t a = s.find_first_not_of(" \t\r\n");
@@ -24,10 +20,6 @@ static std::pair<std::string, std::string> splitCmd(const std::string &line)
 	return { cmd, trim(rest) };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  ctor / dtor
-// ─────────────────────────────────────────────────────────────────────────────
-
 Debugger::Debugger() {}
 
 Debugger::~Debugger()
@@ -36,9 +28,6 @@ Debugger::~Debugger()
 	delete cpu;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  validate – mirrors Executor::validate
-// ─────────────────────────────────────────────────────────────────────────────
 
 std::ifstream Debugger::validate(const std::string &exePath)
 {
@@ -149,14 +138,6 @@ void Debugger::showCurrentLine() const
 		std::cout << "<end of program>";
 	std::cout << "\n";
 }
-
-std::string Debugger::disasm(uint16_t idx) const
-{
-	if (idx < srcLines.size())
-		return srcLines[idx];
-	return "<out of range>";
-}
-
 
 void Debugger::cmdStep()
 {

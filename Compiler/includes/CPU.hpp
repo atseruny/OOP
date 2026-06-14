@@ -26,7 +26,7 @@ public:
 	uint16_t getSP()  const;
 
 private:
-	int32_t regs[NUM_REGS];   // x0–x31  (x0 always 0)
+	int32_t regs[NUM_REGS];    // x0–x31  (x0 always 0)
 	uint16_t IP;               // instruction pointer (indexes into code section)
 	uint16_t SP;               // stack pointer
 	int32_t  cmpFlag;          // result of last CMP

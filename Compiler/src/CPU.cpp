@@ -178,16 +178,17 @@ uint16_t CPU::getSP() const
 void CPU::run(Memory* mem)
 {
 	while (true) {
-		Instruction inst = fetch(mem);
-		uint8_t opcode = decode(inst);
-		if (static_cast<OpCode>(opcode) == OpCode::EXIT)
-			return;
-		uint16_t oldIP = IP;
+    stepOne(mem);
+		// Instruction inst = fetch(mem);
+		// uint8_t opcode = decode(inst);
+		// if (static_cast<OpCode>(opcode) == OpCode::EXIT)
+		// 	return;
+		// uint16_t oldIP = IP;
 
-		execute(inst, inst.op, mem);
+		// execute(inst, inst.op, mem);
 
-		if (IP == oldIP)
-			IP++;
+		// if (IP == oldIP)
+		// 	IP++;
 	}
 }
 
