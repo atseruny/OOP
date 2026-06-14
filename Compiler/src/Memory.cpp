@@ -30,7 +30,7 @@ void Memory::writeCode(uint16_t codeAddr, const Instruction& inst)
 		throw std::runtime_error("Memory::writeCode — code section overflow at index "
 								+ std::to_string(codeAddr));
 
-	int32_t packed =
+	uint32_t packed =
 		static_cast<uint8_t>(inst.op)
 		| (static_cast<uint32_t>(inst.dest)  <<  8)
 		| (static_cast<uint32_t>(inst.left)  << 16)
@@ -76,7 +76,7 @@ void Memory::stackPush(uint16_t& sp, int32_t val)
 								+ ")");
 	cells[sp] = val;
 	sp-= sizeof(uint32_t);
-	std::cout << "[Stack] PUSH " << "  →  SP now 0x" << std::hex << sp << std::dec << "\n";
+	std::cout << "[Stack] PUSH →  SP now 0x" << std::hex << sp << std::dec << "\n";
 }
 
 int32_t Memory::stackPop(uint16_t& sp)
@@ -87,7 +87,7 @@ int32_t Memory::stackPop(uint16_t& sp)
 								+ ")");
 	sp+= sizeof(uint32_t);
 	int32_t val = cells[sp];
-	std::cout << "[Stack] POP  " << "  ←  SP now 0x" << std::hex << sp << std::dec << "\n";
+	std::cout << "[Stack] POP  ←  SP now 0x" << std::hex << sp << std::dec << "\n";
 	return val;
 }
 
