@@ -178,7 +178,8 @@ uint16_t CPU::getSP() const
 void CPU::run(Memory* mem)
 {
 	while (true) {
-    stepOne(mem);
+		if (!stepOne(mem))
+			return;
 		// Instruction inst = fetch(mem);
 		// uint8_t opcode = decode(inst);
 		// if (static_cast<OpCode>(opcode) == OpCode::EXIT)
