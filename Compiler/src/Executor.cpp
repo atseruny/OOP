@@ -28,20 +28,20 @@ std::ifstream Executor::validate(const std::string &exePath)
 
 void Executor::loadAndRun(std::ifstream& exe)
 {
-    std::cout << "\n[Executor] Loading program...\n";
+	std::cout << "\n[Executor] Loading program...\n";
 
-    uint16_t nInstructions = Loader::loadFromStream(exe, memory, constPool);
+	uint16_t nInstructions = Loader::loadFromStream(exe, memory, constPool);
 
-    std::cout << "[Executor] Loaded " << nInstructions
-              << " instruction(s)\n";
+	std::cout << "[Executor] Loaded " << nInstructions
+				<< " instruction(s)\n";
 
-    memory->dump(CODE_BASE, CODE_BASE + nInstructions);
+	memory->dump(CODE_BASE, CODE_BASE + nInstructions);
 
-    std::cout << "\n[Executor] Starting CPU...\n";
+	std::cout << "\n[Executor] Starting CPU...\n";
 
-    cpu->setConstPool(constPool);
-    cpu->run(memory);
+	cpu->setConstPool(constPool);
+	cpu->run(memory);
 
-    std::cout << "\n[Executor] Execution complete.\n";
-    cpu->dumpRegisters();
+	std::cout << "\n[Executor] Execution complete.\n";
+	cpu->dumpRegisters();
 }

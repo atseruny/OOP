@@ -42,7 +42,7 @@ std::ifstream Debugger::validate(const std::string &exePath)
 
 	std::cout << "[Debugger] Setting up debug environment\n";
 	memory = new Memory();
-	cpu    = new CPU();
+	cpu = new CPU();
 	return f;
 }
 
@@ -52,7 +52,7 @@ void Debugger::loadAndDebug(std::ifstream &exe)
 	std::cout << "\n[Debugger] Loading program...\n";
 
 	std::string content((std::istreambuf_iterator<char>(exe)),
-	                     std::istreambuf_iterator<char>());
+						std::istreambuf_iterator<char>());
 
 	{
 		std::istringstream ss(content);
@@ -60,7 +60,10 @@ void Debugger::loadAndDebug(std::ifstream &exe)
 		bool inCode = false;
 		while (std::getline(ss, ln))
 		{
-			if (ln == ".CODE") { inCode = true; continue; }
+			if (ln == ".CODE") {
+				inCode = true;
+				continue;			
+			}
 			if (inCode && !trim(ln).empty())
 				srcLines.push_back(ln);
 		}
@@ -102,16 +105,16 @@ bool Debugger::dispatch(const std::string &line)
 {
 	auto [cmd, arg] = splitCmd(line);
 
-	if (cmd == "step"   || cmd == "s")  { cmdStep();              return running; }
-	if (cmd == "next"   || cmd == "n")  { cmdNext();              return running; }
-	if (cmd == "continue"||cmd == "c")  { cmdContinue();          return running; }
-	if (cmd == "info"   || cmd == "i")  { cmdInfo(arg);           return true; }
-	if (cmd == "print"  || cmd == "p")  { cmdPrint(arg);          return true; }
-	if (cmd == "list"   || cmd == "l")  { cmdList(arg);           return true; }
-	if (cmd == "regs"   || cmd == "r")  { cmdRegs();              return true; }
-	if (cmd == "mem"    || cmd == "m")  { cmdMem(arg);            return true; }
-	if (cmd == "help"   || cmd == "h")  { cmdHelp();              return true; }
-	if (cmd == "quit"   || cmd == "q")  { cmdQuit();              return false; }
+	if (cmd == "step"		|| cmd == "s")  { cmdStep();			return running; }
+	if (cmd == "next"		|| cmd == "n")  { cmdNext();			return running; }
+	if (cmd == "continue"	|| cmd == "c")  { cmdContinue();		return running; }
+	if (cmd == "info"		|| cmd == "i")  { cmdInfo(arg);			return true; }
+	if (cmd == "print"		|| cmd == "p")  { cmdPrint(arg);		return true; }
+	if (cmd == "list"		|| cmd == "l")  { cmdList(arg);			return true; }
+	if (cmd == "regs"		|| cmd == "r")  { cmdRegs();			return true; }
+	if (cmd == "mem"		|| cmd == "m")  { cmdMem(arg);			return true; }
+	if (cmd == "help"		|| cmd == "h")  { cmdHelp();			return true; }
+	if (cmd == "quit"		|| cmd == "q")  { cmdQuit();			return false; }
 
 	std::cout << "Unknown command '" << cmd << "'. Type 'help'.\n";
 	return true;
@@ -189,9 +192,9 @@ void Debugger::cmdPrint(const std::string &arg)
 	if (arg.empty())
 	{
 		std::cout << "Usage: print <rN | #N>\n"
-		             "       print r4       → value of register 4\n"
-		             "       print #12      → value of const-pool[12]\n"
-		             "       print mem N    → raw memory cell N\n";
+					"       print r4       → value of register 4\n"
+					"       print #12      → value of const-pool[12]\n"
+					"       print mem N    → raw memory cell N\n";
 		return;
 	}
 
