@@ -125,7 +125,7 @@ void CPU::execute(const Instruction& inst, const uint8_t op, Memory* mem)
 
 	case OpCode::RET:
 		setReg(REG_FP, pop(mem)); // restore previous FP
-	    IP = pop(mem);
+		IP = pop(mem);
 		break;
 
 	case OpCode::PUSH:

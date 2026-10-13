@@ -113,7 +113,7 @@ void Memory::dump(uint16_t from, uint16_t to) const
 		if (cells[a] != 0)
 		{
 			std::cout << "  [0x" << std::hex << std::setw(4) << std::setfill('0')
-					<< a << "] = " << std::bitset<32>(cells[a]) << "\n";
+					<< a << "] = " << std::setw(8) << (cells[a]) << "\n";
 			anyNonZero = true;
 		}
 	}

@@ -162,7 +162,7 @@ uint16_t Loader::loadFromStream(std::istream& stream, Memory* mem, std::vector<i
 	if (!inCode)
 		throw std::runtime_error("Loader: .CODE section not found in executable");
 
-	uint16_t addr = 0;
+	uint16_t addr = CODE_BASE;
 	auto code_it = codeLines.begin();
 	while (code_it != codeLines.end())
 	{
